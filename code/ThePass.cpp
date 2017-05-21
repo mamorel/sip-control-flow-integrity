@@ -3,6 +3,7 @@
 // cmake ..
 // make
 // opt-3.9 -load code/libThePass.so -thepass < ../something.bc > /dev/null
+#include <stdio.h>
 #include "llvm/Pass.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Module.h"
@@ -21,27 +22,38 @@ namespace {
 		static char ID;
 		ThePass() : CallGraphSCCPass(ID) {}
 
-		virtual bool doInitialization(CallGraph &G){
+		virtual bool doInitialization(CallGraph &G) {
 			errs() << "Module:  " << G.getModule().getName() << "\n";
 			return false;
 		}
-		virtual bool doFinalization(CallGraph &G){return false;}
+
+		virtual bool doFinalization(CallGraph &G) {return false;}
 
 		virtual bool runOnSCC(CallGraphSCC &SCC) {
-		for(auto it = SCC.begin() ; it != SCC.end() ; ++it){
-			Function* func = (*it)->getFunction();
+			for(auto it = SCC.begin() ; it != SCC.end() ; ++it) {
+				Function* func = (*it)->getFunction();
 
-			if (func == 0) continue; 
+				if (!func) continue;
 
-			for(auto iter = (*it)->begin() ; iter < (*it)->end() ; iter++){
-				Function *f = iter->second->getFunction();
-				if(f)
-					errs() << "Func: " << f->getName() << "\n";
+				errs() << "In run on SCC\n";
+				printf("Function: %s\n", func->getName().str().c_str());
+				
+				for(auto iter = (*it)->begin() ; iter < (*it)->end() ; iter++) {
+					errs() << "Iteration!!\n";
+					if(!iter->second) continue;
+					errs() << "Before getFunction()\n";
+					Function *f = iter->second->getFunction();
+					errs() << "After getFunction()\n";
+					if(f) {
+						errs() << "Trying to print name!!\n";
+						printf("Func: %s\n", f->getName().str().c_str());
+					}
+				}
+				errs() << "Before dump\n";
+				(*it)->dump();
+				errs() << "After dump\n";
 			}
-
-			(*it)->dump();
-		    }
-		return false;
+			return false;
 		}
 	};
 }
