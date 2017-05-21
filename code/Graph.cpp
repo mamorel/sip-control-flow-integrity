@@ -13,7 +13,7 @@ using namespace std;
 Vertex::Vertex(string method) {
 	methodName = method;
 }
-
+Vertex::Vertex(){methodName = "";};
 
 string Vertex::getMethodName() {return methodName;}
 
@@ -64,6 +64,7 @@ vector<Vertex> Graph::getPredecessors(Vertex v) {
 	}
 	return result;
 }
+
 
 Vertex Graph::getFirstNode() {
 	for(int i = 0; i < vertices.size(); i++) {

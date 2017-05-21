@@ -17,16 +17,38 @@ using namespace llvm;
 namespace{
 struct OurFunctionPass : public FunctionPass {
 	static char ID;
+	Graph graph;
 	OurFunctionPass() : FunctionPass(ID) {}
+
+	virtual bool doInitialization(Module &M){
+		graph = Graph();
+		return false;
+	}
+	
+	virtual bool doFinalization(Module &M){
+		std::vector<Vertex> preds = graph.getPredecessors(Vertex("foobar"));
+		for(auto v = preds.begin() ; v != preds.end(); v++){
+			errs () << v->getMethodName() << "\n";
+		}
+		return false;
+	}
 	
 	virtual bool runOnFunction(Function &function) {
-		errs() << "Function: " << function.getName().str() << "\n";
+		std::string funcName = function.getName().str();
+		Vertex funcVertex = Vertex(funcName);
+		//errs() << "Function: " << funcVertex.getMethodName() << "\n";
+		
 		for (BasicBlock &block : function) {
 			for (Instruction &instruction: block) {
 				if (auto *callInstruction = dyn_cast<CallInst>(&instruction)) {
 					Function *called = callInstruction->getCalledFunction();
-					if(called)
-						errs() << "Calling function " << called->getName().str() << "\n";
+					if(called){
+						std::string calledName = called->getName().str();
+						Vertex calledVertex = Vertex(calledName);
+						//errs() << "Calling function " << calledVertex.getMethodName() << "\n";
+						graph.addEdge(funcVertex, calledVertex);
+						
+					}
 				}
 			}
 		}
