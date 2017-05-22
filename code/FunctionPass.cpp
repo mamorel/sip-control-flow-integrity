@@ -55,7 +55,6 @@ struct OurFunctionPass : public FunctionPass {
 	virtual bool doFinalization(Module &M){
 		Vertex first = graph.getFirstNode();
 		errs() << graph.str();
-		
 		return false;
 	}
 	
@@ -78,20 +77,22 @@ struct OurFunctionPass : public FunctionPass {
 		}
 		for (BasicBlock &block : function) {
 		for (Instruction &instruction: block) {
-		LLVMContext& Ctx = function.getContext();
-		FunctionType *registerType = TypeBuilder<void(char *), false>::get(Ctx);
-		Function* registerFunction = cast<Function>(function.getParent()->getOrInsertFunction(
-		  "registerFunction", registerType));
-		
-		IRBuilder<> builder(&instruction);
-		builder.SetInsertPoint(&block, builder.GetInsertPoint());
-
-		// Insert a call to our function.
-		Constant *funcConst = ConstantDataArray::getString(Ctx, funcName.c_str());
+			LLVMContext& Ctx = function.getContext();
 			
-		Value *strPtr = builder.CreateGlobalStringPtr(funcName.c_str());
-		builder.CreateCall(registerFunction, funcConst);
-		break;
+			FunctionType *registerType = TypeBuilder<void(char *), false>::get(Ctx);
+			Function* registerFunction = cast<Function>(function.getParent()->getOrInsertFunction(
+		  		"registerFunction", registerType));
+		
+			IRBuilder<> builder(&instruction);
+			builder.SetInsertPoint(&block, builder.GetInsertPoint());
+
+			// Insert a call to our function.
+			Constant *funcConst = ConstantDataArray::getString(Ctx, funcName.c_str());
+			
+			Value *strPtr = builder.CreateGlobalStringPtr(funcName.c_str());
+			builder.CreateCall(registerFunction, strPtr);
+			
+			break;
 		}
 		}
 	}
