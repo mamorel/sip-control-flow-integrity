@@ -55,45 +55,59 @@ struct OurFunctionPass : public FunctionPass {
 	virtual bool doFinalization(Module &M){
 		Vertex first = graph.getFirstNode();
 		errs() << graph.str();
+
 		return false;
 	}
 	
 	virtual bool runOnFunction(Function &function) {	
 		std::string funcName = function.getName().str();
 		Vertex funcVertex = Vertex(funcName);
+		bool first_instr = true;
 	
 		for (BasicBlock &block : function) {
 			for (Instruction &instruction: block) {
+				if(first_instr){
+					LLVMContext& Ctx = function.getContext();
+
+					FunctionType *registerType = TypeBuilder<void(char *), false>::get(Ctx);
+					Function* registerFunction = cast<Function>(function.getParent()->getOrInsertFunction(
+				  		"registerFunction", registerType));
+
+					IRBuilder<> builder(&instruction);
+					builder.SetInsertPoint(&block, builder.GetInsertPoint());
+
+					// Insert a call to our function.
+					Constant *funcConst = ConstantDataArray::getString(Ctx, funcName.c_str());
+
+					Value *strPtr = builder.CreateGlobalStringPtr(funcName.c_str());
+					builder.CreateCall(registerFunction, strPtr);	
+					first_instr = false;
+				}
 				if (auto *callInstruction = dyn_cast<CallInst>(&instruction)) {
 					Function *called = callInstruction->getCalledFunction();
 					if(called){
 						std::string calledName = called->getName().str();
 						Vertex calledVertex = Vertex(calledName);
 						graph.addEdge(funcVertex, calledVertex);
-						
 					}
 				}
-			}
-		}
-		for (BasicBlock &block : function) {
-		for (Instruction &instruction: block) {
-			LLVMContext& Ctx = function.getContext();
+				if(auto *callInstruction = dyn_cast<ReturnInst>(&instruction)){
+					LLVMContext& Ctx = function.getContext();
 			
-			FunctionType *registerType = TypeBuilder<void(char *), false>::get(Ctx);
-			Function* registerFunction = cast<Function>(function.getParent()->getOrInsertFunction(
-		  		"registerFunction", registerType));
+					FunctionType *registerType = TypeBuilder<void(char *), false>::get(Ctx);
+					Function* deregisterFunction = cast<Function>(function.getParent()->getOrInsertFunction(
+				  		"deregisterFunction", registerType));
 		
-			IRBuilder<> builder(&instruction);
-			builder.SetInsertPoint(&block, builder.GetInsertPoint());
+					IRBuilder<> builder(&instruction);
+					builder.SetInsertPoint(&block, builder.GetInsertPoint());
 
-			// Insert a call to our function.
-			Constant *funcConst = ConstantDataArray::getString(Ctx, funcName.c_str());
+					// Insert a call to our function.
+					Constant *funcConst = ConstantDataArray::getString(Ctx, funcName.c_str());
 			
-			Value *strPtr = builder.CreateGlobalStringPtr(funcName.c_str());
-			builder.CreateCall(registerFunction, strPtr);
-			
-			break;
-		}
+					Value *strPtr = builder.CreateGlobalStringPtr(funcName.c_str());
+					builder.CreateCall(deregisterFunction, strPtr);
+				}
+			}
 		}
 	}
 };
