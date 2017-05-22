@@ -26,10 +26,9 @@ struct OurFunctionPass : public FunctionPass {
 	}
 	
 	virtual bool doFinalization(Module &M){
-		std::vector<Vertex> preds = graph.getPredecessors(Vertex("foobar"));
-		for(auto v = preds.begin() ; v != preds.end(); v++){
-			errs () << v->getMethodName() << "\n";
-		}
+		Vertex first = graph.getFirstNode();
+		errs() << graph.str();
+		
 		return false;
 	}
 	

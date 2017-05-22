@@ -45,7 +45,7 @@ int Graph::addEdge(Vertex origin, Vertex destination) {
 		edges.push_back(newEdge);
 }
 
-vector<Vertex> Graph::getSuccessors(Vertex v) {
+vector<Vertex> Graph::getCallees(Vertex v) {
 	vector<Vertex> result;
 	for(int i = 0; i < edges.size(); i++) {
 		if(edges[i].getOrigin() == v) {
@@ -55,7 +55,7 @@ vector<Vertex> Graph::getSuccessors(Vertex v) {
 	return result;
 }
 
-vector<Vertex> Graph::getPredecessors(Vertex v) {
+vector<Vertex> Graph::getCallers(Vertex v) {
 	vector<Vertex> result;
 	for(int i = 0; i < edges.size(); i++) {
 		if(edges[i].getDestination() == v) {
@@ -68,7 +68,7 @@ vector<Vertex> Graph::getPredecessors(Vertex v) {
 
 Vertex Graph::getFirstNode() {
 	for(int i = 0; i < vertices.size(); i++) {
-		if(getPredecessors(vertices[i]).size() == 0) {
+		if(getCallers(vertices[i]).size() == 0) {
 			return vertices[i];
 		}
 	}
@@ -77,7 +77,7 @@ Vertex Graph::getFirstNode() {
 vector<Vertex> Graph::getLastNodes() {
 	vector<Vertex> result;
 	for(int i = 0; i < vertices.size(); i++) {
-		if(getSuccessors(vertices[i]).size() == 0) {
+		if(getCallees(vertices[i]).size() == 0) {
 			result.push_back(vertices[i]);
 		}
 	}
