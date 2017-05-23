@@ -55,25 +55,48 @@ void deregisterFunction(char functionName[]) {
 	printf("\n");
 }
 
+/**
+ * Computes a hash over the shadow stack as follows:
+ * h(h(h(...h(h(main) | h(f1))...)| h(f4))| h(f5)) | h(sensitiveFunction))
+ * if the stack is: sensitiveFunction, f5, f4, ..., f1, main
+ *
+ * Idea: Compute Merkle tree of known good paths and compare the hash over the stack with 
+ * one of the last hashes in the tree:
+ *                                          Root node
+ *                                         /    ... \
+ *     (h(h(main) ...| h(f5)) | h(sensitiveFunction)) ...  Some more stuff
+ *                     î
+ *       Verify if this is the correct hash
+ */
 int verifyStack() {
-	unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256_CTX sha256;
-    SHA256_Init(&sha256);
-
-	char *buffer;
 	node_t *currentNode = NULL;
 	node_t *nextNode = stack;
-	while(nextNode->next != currentNode) {
-		nextNode = nextNode->next;
-	}
-	currentNode = nextNode;
-	buffer = malloc((strlen(nextNode->value) + SHA256_DIGEST_LENGTH) * sizeof(char));
-	strcpy(buffer,hash);
-	memcpy(buffer+strlen(hash),nextNode->value,sizeof(nextNode->value));
-	SHA256_Update(&sha256, buffer, sizeof(buffer));
-	
-    SHA256_Final(hash, &sha256);
 
+	unsigned char hash[SHA256_DIGEST_LENGTH];
+	unsigned char nextHash[SHA256_DIGEST_LENGTH];
+	unsigned char buffer[SHA256_DIGEST_LENGTH * 2];
+
+	do {
+    	SHA256_CTX sha256;
+    	SHA256_Init(&sha256);
+    	SHA256_CTX sha256_next;
+    	SHA256_Init(&sha256_next);
+
+		while(nextNode->next != currentNode) {
+			nextNode = nextNode->next;
+		}
+		currentNode = nextNode;
+		SHA256_Update(&sha256_next, nextNode->value, sizeof(nextNode->value));
+    	SHA256_Final(nextHash, &sha256_next);
+
+		strcpy(buffer,hash);
+		memcpy(buffer+strlen(hash),nextHash, SHA256_DIGEST_LENGTH);
+		SHA256_Update(&sha256, buffer, sizeof(buffer));
+    	SHA256_Final(hash, &sha256);
+	} while(currentNode != stack);
+	
+	// TODO Check against known good hashes.
+	return 0;
 }
 
 
