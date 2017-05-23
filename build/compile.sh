@@ -3,6 +3,6 @@ opt-3.9 -load code/libFunctionPass.so -functionpass < ../something.bc > somethin
 opt-3.9 -O3 < something_pass.bc > something_opt.bc
 llc-3.9 something_opt.bc
 gcc -c something_opt.s -o something_opt.o
-gcc -c ../code/StackAnalysis.c -o StackAnalysis.o
-gcc something_opt.o StackAnalysis.o -o something
+gcc -c ../code/StackAnalysis.c -o StackAnalysis.o -lssl -lcrypto
+gcc something_opt.o StackAnalysis.o -o something -lssl -lcrypto
 ./something
