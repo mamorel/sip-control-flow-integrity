@@ -15,13 +15,21 @@ node_t *stack = NULL;
 void registerFunction(char functionName[]) {
 	printf("In function: %s\n", functionName);
 
+	node_t *next = stack;
+	while(next != NULL) {
+		if(next->value == functionName) {
+			return;
+		}
+		next = next->next;
+	}
+
 	node_t *new_node = malloc(sizeof(node_t));
 	new_node->value = functionName;
 	new_node->next = stack;
 	stack = new_node;
 
 	printf("Stack: ");
-	node_t *next = stack;
+	next = stack;
 	while(next != NULL) {
 		printf("%s ; ", next->value);
 		next = next->next;
@@ -37,8 +45,6 @@ void deregisterFunction(char functionName[]) {
         return;
     }
 	if(stack->value != functionName) {
-		fprintf(stderr, "Error: Wrong function on top of the shadow stack! Want to pop %s but found %s\n",
-			functionName, stack->value);
 		return;
 	}
 
@@ -77,6 +83,7 @@ int verifyStack() {
 	unsigned char buffer[SHA256_DIGEST_LENGTH * 2];
 
 	do {
+		nextNode = stack;
     	SHA256_CTX sha256;
     	SHA256_Init(&sha256);
     	SHA256_CTX sha256_next;
