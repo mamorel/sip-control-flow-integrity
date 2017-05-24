@@ -96,14 +96,14 @@ void readHashes(unsigned char ***known_hashes,  int *line_count){
 		prev_c = c;
 		c = fgetc(fp);
 		if(c == '\n')
-			line_num++;
+		line_num++;
 	}while(c != EOF);
 	if(prev_c != '\n' && line_num != 0)
-		line_num++;
+	line_num++;
 
 	*line_count = line_num;
 
-	printf("Line count: %d\n", *line_count);
+	//printf("Line count: %d\n", *line_count);
 	fseek(fp, 0, SEEK_SET);
 
 	*known_hashes = malloc(line_num*sizeof(char *));
@@ -162,7 +162,6 @@ int verify(unsigned char **known, int known_size, unsigned char *computed){
 *       Verify if this is the correct hash
 */
 void mtree(unsigned char **list, int size) {
-	printf("Iter, size=%d\n", size);
 	if(size == 1){
 		return;
 	}
@@ -196,7 +195,7 @@ void mtree(unsigned char **list, int size) {
 		// Compute SHA256( SHA256(current) | SHA256(next) )
 		SHA256_Final(hash, &sha256);
 
-		printHash(hash, buffer, "concat", SHA256_DIGEST_LENGTH*2, SHA256_DIGEST_LENGTH);
+		//printHash(hash, buffer, "concat", SHA256_DIGEST_LENGTH*2, SHA256_DIGEST_LENGTH);
 
 		memcpy(list[i/2], hash, SHA256_DIGEST_LENGTH);
 
@@ -234,18 +233,12 @@ void stackToArray(unsigned char ***res){
 	return;
 }
 
-int main(){ // verifyStack
+void response(){
+	exit(1);
+}
 
+int verifyStack(){ // verifyStack
 	unsigned char buf[SHA256_DIGEST_LENGTH];
-
-	// Simulate stack
-	registerFunction("main");
-	registerFunction("bar");
-	registerFunction("foo");
-	registerFunction("baz");
-	registerFunction("foobar");
-
-	printf("Stack length:  %d\n", stack_len);
 
 	// Get known hashes from file
 	int known_count = 0;
@@ -253,7 +246,7 @@ int main(){ // verifyStack
 	readHashes(&known_hashes, &known_count);
 
 	for(int i = 0 ; i < known_count; i++)
-		printf("Known hash: %s\n", known_hashes[i]);
+	printf("Known hash: %s\n", known_hashes[i]);
 
 	// Build array from stack
 	unsigned char **stackArray;
@@ -272,7 +265,7 @@ int main(){ // verifyStack
 
 	// Compute root of the merkle tree
 	mtree(stackArray, stack_len);
-	printf("Root hash: \n");
+	printf("Root hash: ");
 	for(int j = 0; j < SHA256_DIGEST_LENGTH ; j++){
 		printf("%02x", stackArray[0][j]);
 	}
@@ -284,6 +277,7 @@ int main(){ // verifyStack
 		printf("Stack Trace OK, found match at position %d: %s\n", res, known_hashes[res]);
 	}else{
 		printf("Invalid Stack Trace!\n");
+		//response();
 	}
 
 	// Free known_hashes
