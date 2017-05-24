@@ -22,6 +22,11 @@ namespace {
 		static char ID;
 		ThePass() : CallGraphSCCPass(ID) {}
 
+		void getAnalysisUsage(AnalysisUsage &AU) const override {
+			AU.addRequired<CallGraphWrapperPass>();
+			AU.setPreservesAll();
+		}
+
 		virtual bool doInitialization(CallGraph &G) {
 			errs() << "Module:  " << G.getModule().getName() << "\n";
 			return false;
@@ -33,25 +38,19 @@ namespace {
 			for(auto it = SCC.begin() ; it != SCC.end() ; ++it) {
 				Function* func = (*it)->getFunction();
 
-				if (!func) continue;
+				if(!func || func->size() == 0) continue;
 
-				errs() << "In run on SCC\n";
 				printf("Function: %s\n", func->getName().str().c_str());
 				
 				for(auto iter = (*it)->begin() ; iter < (*it)->end() ; iter++) {
-					errs() << "Iteration!!\n";
 					if(!iter->second) continue;
-					errs() << "Before getFunction()\n";
+
 					Function *f = iter->second->getFunction();
-					errs() << "After getFunction()\n";
 					if(f) {
-						errs() << "Trying to print name!!\n";
 						printf("Func: %s\n", f->getName().str().c_str());
 					}
 				}
-				errs() << "Before dump\n";
 				(*it)->dump();
-				errs() << "After dump\n";
 			}
 			return false;
 		}

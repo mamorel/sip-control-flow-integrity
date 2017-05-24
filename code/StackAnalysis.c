@@ -103,6 +103,7 @@ int verifyStack() {
 	} while(currentNode != stack);
 	
 	// TODO Check against known good hashes.
+	// Response mechanism
 	return 0;
 }
 
