@@ -13,6 +13,7 @@ using namespace std;
 Vertex::Vertex(string method) {
 	methodName = method;
 }
+
 Vertex::Vertex(){methodName = "";};
 
 string Vertex::getMethodName() {return methodName;}
@@ -31,9 +32,11 @@ Graph::Graph() {}
 void Graph::insert(Vertex v) {
 	vertices.push_back(v);
 }
+
 bool Graph::contains(Vertex v){
 	return (find(vertices.begin(), vertices.end(), v) != vertices.end());
 }
+
 int Graph::addEdge(Vertex origin, Vertex destination) {
 	Edge newEdge(origin, destination);
 	if(find(vertices.begin(), vertices.end(), origin) == vertices.end())
@@ -65,7 +68,6 @@ vector<Vertex> Graph::getCallers(Vertex v) {
 	return result;
 }
 
-
 Vertex Graph::getFirstNode() {
 	for(int i = 0; i < vertices.size(); i++) {
 		if(getCallers(vertices[i]).size() == 0) {
@@ -81,5 +83,41 @@ vector<Vertex> Graph::getLastNodes() {
 			result.push_back(vertices[i]);
 		}
 	}
+	return result;
+}
+
+vector<Vertex> Graph::getDominators(Vertex v) {
+	vector<Vertex> pathToVertex;
+	pathToVertex.push_back(getFirstNode());
+	int size = 1;
+	for(int i = 0; i < size; i++) {
+		vector<Vertex> next = getCallees(pathToVertex[i]);
+		// Add all nodes in next to path if they are not already contained and not v
+		for(auto it = next.begin() ; it != next.end() ; ++it) {
+			if((*it != v) && find(pathToVertex.begin(), pathToVertex.end(), *it) == pathToVertex.end()) {
+				pathToVertex.push_back(*it);
+				size++;
+			}
+		}
+	} // Now, pathToVertex contains all nodes from start to v (and some more)
+
+	vector<Vertex> preds = getCallers(v);
+	size = preds.size();
+	for(int i = 0; i < size; i++) {
+		vector<Vertex> newDominators = getCallers(preds[i]);
+		for(auto it = newDominators.begin() ; it != newDominators.end() ; ++it) {
+			if(find(preds.begin(), preds.end(), *it) == preds.end()) {
+				preds.push_back(*it);
+				size++;
+			}
+		}
+	} // Now, preds contains all nodes from v to start (backwards)
+
+	vector<Vertex> result;
+	for(auto it = pathToVertex.begin() ; it != pathToVertex.end() ; ++it) {
+		if(find(preds.begin(), preds.end(), *it) != preds.end()) {
+			result.push_back(*it);
+		}
+	} // Result only contains vertices that are contained in both paths
 	return result;
 }

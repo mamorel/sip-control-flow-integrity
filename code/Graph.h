@@ -62,6 +62,8 @@ public:
     
     vector<Edge> getEdges();
     
+    vector<Vertex> getDominators(Vertex v);
+    
     string str() {
     	ostringstream os;
 		for(Edge e : this->edges)
