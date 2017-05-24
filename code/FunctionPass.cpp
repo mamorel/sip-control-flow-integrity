@@ -82,6 +82,7 @@ struct OurFunctionPass : public FunctionPass {
 					Value *strPtr = builder.CreateGlobalStringPtr(funcName.c_str());
 					builder.CreateCall(registerFunction, strPtr);	
 					first_instr = false;
+					// TODO: Inject call to verify() if sensitive function
 				}
 				if (auto *callInstruction = dyn_cast<CallInst>(&instruction)) {
 					Function *called = callInstruction->getCalledFunction();

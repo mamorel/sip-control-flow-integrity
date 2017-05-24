@@ -232,7 +232,6 @@ void stackToArray(unsigned char ***res){
 		i++;
 	}
 	return;
-
 }
 
 int main(){ // verifyStack
