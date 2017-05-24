@@ -64,6 +64,10 @@ public:
     
     vector<Vertex> getDominators(Vertex v);
     
+    bool existsPathFromTo(Vertex v, Vertex w);
+    
+    vector<Vertex> nodesOnEveryPathFromTo(Vertex v, Vertex w, vector<Vertex> currentPath);
+    
     string str() {
     	ostringstream os;
 		for(Edge e : this->edges)

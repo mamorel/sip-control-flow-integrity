@@ -121,3 +121,64 @@ vector<Vertex> Graph::getDominators(Vertex v) {
 	} // Result only contains vertices that are contained in both paths
 	return result;
 }
+
+/**
+ * Returns true if at least one path from v to w exists
+ */
+bool Graph::existsPathFromTo(Vertex v, Vertex w) {
+	vector<Vertex> pathToVertex;
+	pathToVertex.push_back(v);
+	int size = 1;
+	for(int i = 0; i < size; i++) {
+		vector<Vertex> next = getCallees(pathToVertex[i]);
+		if(find(next.begin(), next.end(), w) == next.end()) {
+			// Add all nodes in next to path if they are not already contained
+			for(auto it = next.begin() ; it != next.end() ; ++it) {
+				if(find(pathToVertex.begin(), pathToVertex.end(), *it) == pathToVertex.end()) {
+					pathToVertex.push_back(*it);
+					size++;
+				}
+			}
+		} else {
+			// w is in one of the next nodes -> There is a path!
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+/**
+ * Returns the nodes which are on every path from v to w. Start with empty currentPath.
+ */
+vector<Vertex> Graph::nodesOnEveryPathFromTo(Vertex v, Vertex w, vector<Vertex> currentPath) {
+	vector<Vertex> next = getCallees(v);
+	vector<vector<Vertex>> allNextNodes;
+	for(auto it = next.begin() ; it != next.end() ; ++it) {
+		if(*it != v && find(currentPath.begin(), currentPath.end(), *it) == currentPath.end()) {
+			// It next node is not v and not already in the path, search for next nodes
+			vector<Vertex> nextCurrentPath = currentPath;
+			nextCurrentPath.push_back(v);
+			allNextNodes.push_back(nodesOnEveryPathFromTo(*it, w, nextCurrentPath));
+		}
+	}
+	if(allNextNodes.size() == 0) {
+		vector<Vertex> result;
+		return result;
+	}
+	
+	// Now, take the union of all vectors in allNextNodes and add them to pathToVertex.
+	vector<Vertex> result;
+	for(Vertex &value : allNextNodes[0]) {
+		bool isContainedEverywhere = true;
+		for(vector<Vertex> &nextVector : allNextNodes) {
+			if(find(nextVector.begin(), nextVector.end(), value) == nextVector.end()) {
+				isContainedEverywhere = false;
+			}
+		}
+		if(isContainedEverywhere) {
+			result.push_back(value);
+		}
+	}
+	return result;
+}
