@@ -62,11 +62,7 @@ public:
     
     vector<Edge> getEdges();
     
-    vector<Vertex> getDominators(Vertex v);
-    
-    bool existsPathFromTo(Vertex v, Vertex w);
-    
-    vector<Vertex> nodesOnEveryPathFromTo(Vertex v, Vertex w, vector<Vertex> currentPath);
+    void writeGraphFile();
     
     string str() {
     	ostringstream os;
