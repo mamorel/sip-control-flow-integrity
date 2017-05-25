@@ -4,8 +4,10 @@ using namespace std;
 class Vertex {
 public:
     Vertex(string method);
+    Vertex(string method, bool sensitive);
     Vertex();
     string getMethodName();
+    bool isSensitive();
     bool operator== (const Vertex& rhs) const {
     	return (methodName == rhs.methodName);
     };
@@ -19,6 +21,7 @@ public:
 
 private:
     string methodName;
+    bool sensitive;
 };
 
 

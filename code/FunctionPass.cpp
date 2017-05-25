@@ -104,9 +104,14 @@ namespace{
 				}
 				if (auto *callInstruction = dyn_cast<CallInst>(&instruction)) {
 					Function *called = callInstruction->getCalledFunction();
-					if(called){
+					if(called) {
 						string calledName = called->getName().str();
-						Vertex calledVertex = Vertex(calledName);
+						Vertex calledVertex;
+						if(find(sensitiveList.begin(), sensitiveList.end(), calledName) != sensitiveList.end()) {
+							calledVertex = Vertex(calledName, true);
+						} else {
+							calledVertex = Vertex(calledName);
+						}
 						graph.addEdge(funcVertex, calledVertex);
 					}
 				}

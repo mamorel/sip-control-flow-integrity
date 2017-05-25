@@ -13,11 +13,19 @@ using namespace std;
 
 Vertex::Vertex(string method) {
 	methodName = method;
+	sensitive = false;
 }
 
-Vertex::Vertex(){methodName = "";};
+Vertex::Vertex(string method, bool sensitive) {
+	methodName = method;
+	this->sensitive = sensitive;
+}
+
+Vertex::Vertex(){methodName = "";sensitive=false;}
 
 string Vertex::getMethodName() {return methodName;}
+
+bool Vertex::isSensitive() {return sensitive;}
 
 Edge::Edge(Vertex org, Vertex dest) {
 	origin = org;
@@ -40,11 +48,18 @@ bool Graph::contains(Vertex v){
 
 int Graph::addEdge(Vertex origin, Vertex destination) {
 	Edge newEdge(origin, destination);
-	if(find(vertices.begin(), vertices.end(), origin) == vertices.end())
+	if(find(vertices.begin(), vertices.end(), origin) == vertices.end()) {
 		vertices.push_back(origin);
-	if(find(vertices.begin(), vertices.end(), destination) == vertices.end())
+	} else if(origin.isSensitive()) {
+		int index = find(vertices.begin(), vertices.end(), origin) - vertices.begin();
+		vertices[index] = origin;
+	}
+	if(find(vertices.begin(), vertices.end(), destination) == vertices.end()) {
 		vertices.push_back(destination);
-
+	} else if(destination.isSensitive()) {
+		int index = find(vertices.begin(), vertices.end(), destination) - vertices.begin();
+		vertices[index] = destination;
+	}
 	if(find(edges.begin(), edges.end(), newEdge) == edges.end())
 		edges.push_back(newEdge);
 }
