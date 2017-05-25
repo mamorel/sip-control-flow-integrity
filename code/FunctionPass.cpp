@@ -32,7 +32,7 @@ static cl::opt<string> InputSensitiveFcts("i",
 	cl::value_desc("filename"));
 
 
-void readInput(std::vector<std::string> *res){
+void readInput(std::vector<std::string> *res) {
 	std::ifstream ifs;
 	std::string line;
 	ifs.open(InputSensitiveFcts.c_str());
@@ -92,7 +92,7 @@ namespace{
 					first_instr = false;
 
 					// Function is in the sensitive list
-					if(find(sensitiveList.begin(), sensitiveList.end(), funcName) != sensitiveList.end()){
+					if(find(sensitiveList.begin(), sensitiveList.end(), funcName) != sensitiveList.end()) {
 						FunctionType *verifyType = TypeBuilder<void(), false>::get(Ctx);
 						Function *verifyFunction = cast<Function>(function.getParent()->
 							getOrInsertFunction("verifyStack", verifyType));
@@ -110,7 +110,7 @@ namespace{
 						graph.addEdge(funcVertex, calledVertex);
 					}
 				}
-				if(auto *callInstruction = dyn_cast<ReturnInst>(&instruction)){
+				if(auto *callInstruction = dyn_cast<ReturnInst>(&instruction)) {
 					LLVMContext& Ctx = function.getContext();
 
 					FunctionType *registerType = TypeBuilder<void(char *), false>::get(Ctx);
