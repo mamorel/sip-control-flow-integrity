@@ -18,9 +18,8 @@ opt-3.9 -O3 < something_pass.bc > something_opt.bc
 llc-3.9 something_opt.bc
 gcc -c something_opt.s -o something_opt.o
 gcc -c ../code/NewStackAnalysis.c -o StackAnalysis.o -lssl -lcrypto
-gcc something_opt.o StackAnalysis.o -o something -lssl -lcrypto
+gcc something_opt.o StackAnalysis.o -o $2 -lssl -lcrypto
 
-chmod +x $2
 printf "Calling '%s'\n\n" "$2"
 $2
 
