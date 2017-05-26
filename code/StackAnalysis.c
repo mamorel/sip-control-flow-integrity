@@ -17,12 +17,6 @@ char **mapping;
 char **adj_mat;
 int vertices_count;
 
-unsigned char checksum[SHA256_DIGEST_LENGTH] = {
-	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-	0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13,
-	0x14, 0x15, 0x16, 0x17, 0x018, 0x19, 0x1a, 0x1b, 0x1c, 0x1d,
-  0x1e, 0x1f};
-
 void registerFunction(char functionName[]);
 void deregisterFunction(char functionName[]);
 
@@ -91,12 +85,23 @@ int verifyChecksum(){
 	char buf[1024];
 	int r;
 
-	while(( r = fread(buf, 1, sizeof(buf), fp)) > 0){
+	while((r = fread(buf, 1, sizeof(buf), fp)) > 0){
 		SHA256_Update(&sha, buf, r);
 	}
 	SHA256_Final(hash, &sha);
+	char actualHash[65];
+	for(int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+        sprintf(actualHash + (i * 2), "%02x", hash[i]);
+    }
+    actualHash[64] = 0;
 
-	return (memcmp(hash, checksum, SHA256_DIGEST_LENGTH) == 0);
+	char *expectedHash = "123";
+
+	printf("Actual hash: %s\n", actualHash);
+	printf("Expected hash: %s\n", expectedHash);
+	printf("Equal? %d\n", strcmp(expectedHash, actualHash) == 0);
+
+	return (strcmp(expectedHash, actualHash) == 0);
 }
 
 /**

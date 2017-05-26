@@ -113,6 +113,26 @@ vector<Vertex> Graph::getSensitiveNodes() {
 	return result;
 }
 
+void rewriteStackAnalysis(string checksum) {
+	ifstream filein("../code/StackAnalysis.c"); //File to read from
+	ofstream fileout("../code/NewStackAnalysis.c"); //Temporary file
+	if(!filein || !fileout){
+		cout << "Error opening files!" << endl;
+		return;
+	}
+
+	string strReplace = "	char *expectedHash = \"";
+
+	string strTemp;
+	while(getline(filein, strTemp)) {
+		if(strTemp.find(strReplace) != string::npos) {
+			strTemp = "	char *expectedHash = \"" + checksum + "\";";
+		}
+		strTemp += "\n";
+		fileout << strTemp;
+	}
+}
+
 void Graph::writeGraphFile() {
 	vector<Vertex> paths = getPathsToSensitiveNodes();
 	ofstream outFile;
@@ -168,6 +188,7 @@ void Graph::writeGraphFile() {
 	outChecksum.open("checksum.txt");
 	outChecksum << checksum << endl;
 	outChecksum.close();
+	rewriteStackAnalysis(checksum);
 	return;
 	// TODO: Get the checksum into StackAnalysis.c
 	// Idea: write a default checksum to the c file, copy StackAnalysis to a new file and
