@@ -14,7 +14,7 @@ int stack_len = 0;
 
 int built_matrix = 0;
 char **mapping;
-int **adj_mat;
+char **adj_mat;
 int vertices_count;
 
 void registerFunction(char functionName[]);
@@ -102,7 +102,7 @@ int stringcmp(const void *a, const void *b) {
 * Reads known edges from file 'X.txt' line by line.
 * Returns pointer to array of known edges and number of edges read.
 */
-void readEdges(char ***mapping, int ***adj_mat, int *vertices_count){
+void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 
 	FILE *fp;
 	int length = 256;
@@ -156,13 +156,13 @@ void readEdges(char ***mapping, int ***adj_mat, int *vertices_count){
 	}
 
 	// Alloc adjacency matrix
-	*adj_mat = (int **)malloc(*vertices_count * sizeof(int *));
+	*adj_mat = (char **)malloc(*vertices_count * sizeof(char *));
 	if (*adj_mat == NULL){
 		fprintf(stderr, "Failed to alloc adjacency matrix.\n");
 		exit(1);
 	}
 	for(int i = 0 ; i < *vertices_count ; i++){
-		(*adj_mat)[i] = (int *)malloc(*vertices_count * sizeof(int));
+		(*adj_mat)[i] = (char *)malloc(*vertices_count * sizeof(char));
 		if ((*adj_mat)[i] == NULL){
 			fprintf(stderr, "Failed to alloc adj_mat[%d].\n", i);
 			exit(1);
@@ -215,7 +215,7 @@ void response(){
 	//exit(1);
 }
 
-void verify(char ***mapping, int ***adj_mat, int vertices_count) {
+void verify(char ***mapping, char ***adj_mat, int vertices_count) {
 	node_t *curr = stack, *next;
 	char *curr_name;
 	char *next_name;
