@@ -80,7 +80,7 @@ void deregisterFunction(char functionName[]) {
 * Reads known edges from file 'X.txt' line by line.
 * Returns pointer to array of known edges and number of edges read.
 */
-void readEdges(map<string, int> *mapping, int ***adj_mat, int *edges_count){
+void readEdges(map<string, int> *mapping, bool ***adj_mat, int *edges_count){
 	ifstream ifs;
 	vector<string> tmp;
 
@@ -90,15 +90,15 @@ void readEdges(map<string, int> *mapping, int ***adj_mat, int *edges_count){
 
 	ifs.open("graph.txt");
 
-	while(getline(ifs, line)){
-		if(line.back() == '\n'){
+	while(getline(ifs, line)) {
+		if(line.back() == '\n') {
 			line.erase(line.size() -1);
 		}
 		stringstream ss(line);
-		while (ss >> buffer){
+		while (ss >> buffer) {
 			tmp.push_back(buffer);
 			//cout << "Buffer: " << buffer << endl;
-			if(mapping->find(buffer) == mapping->end()){
+			if(mapping->find(buffer) == mapping->end()) {
 				mapping->insert(pair<string, int>(buffer, i));
 				i++;
 			}
@@ -111,28 +111,28 @@ void readEdges(map<string, int> *mapping, int ***adj_mat, int *edges_count){
 	cout << "Edges: " << edges << endl;
 
 	// Malloc adjacency matrix
-	*adj_mat = (int **)malloc(edges * sizeof(int *));
-	if(*adj_mat == NULL){
+	*adj_mat = (bool **)malloc(edges * sizeof(bool *));
+	if(*adj_mat == NULL) {
 		fprintf(stderr, "Failed to malloc adj_mat\n");
 		exit(1);
 	}
 
-	for(int id = 0 ; id < edges ; id ++){
-		(*adj_mat)[id] = (int *)malloc(edges * sizeof(int));
-		if((*adj_mat)[id] == NULL){
+	for(int id = 0 ; id < edges ; id++) {
+		(*adj_mat)[id] = (bool *)malloc(edges * sizeof(bool));
+		if((*adj_mat)[id] == NULL) {
 			fprintf(stderr, "Failed to malloc adj_mat[%d]\n", id);
 			exit(1);
 		}
-		memset((*adj_mat)[id], 0, sizeof(int)*edges);
+		memset((*adj_mat)[id], 0, sizeof(bool)*edges);
 	}
 
 	// Build matrix
-	for(int idx = 0 ; idx < tmp.size() ; idx = idx+=2){
-		if(mapping->find(tmp[idx]) == mapping->end()){
+	for(int idx = 0 ; idx < tmp.size() ; idx = idx+=2) {
+		if(mapping->find(tmp[idx]) == mapping->end()) {
 			mapping->insert(pair<string, int>(tmp[idx], i));
 			i++;
 		}
-		if(mapping->find(tmp[idx+1]) == mapping->end()){
+		if(mapping->find(tmp[idx+1]) == mapping->end()) {
 			mapping->insert(pair<string, int>(tmp[idx+1], i));
 			i++;
 		}
@@ -147,35 +147,40 @@ void response(){
 	//exit(1);
 }
 
-void verify(map<string, int> *mapping, int ***adj_mat){
+void verify(map<string, int> *mapping, bool ***adj_mat){
 	node_t *curr = stack, *next = curr->next, *tmp;
 	string curr_name, next_name;
 
-	do{
+	do {
+		// The stack is calledFct, calleeFct, so we need to check if edge "next -> curr" exists
 		curr_name = curr->value;
 		next_name = next->value;
-		cout << "Checking edge: " << curr_name << " -> " << next_name << "\n";
+		cout << "Checking edge: " << next_name << " -> " << curr_name << "\n";
 
 		if(mapping->find(curr_name) == mapping->end()){
 			cout << "Could not find function " << curr_name << endl;
 			response();
+			return;
 		}
-		else if(mapping->find(next_name) == mapping->end()){
+		if(mapping->find(next_name) == mapping->end()){
 			cout << "Could not find function " << next_name << endl;
 			response();
+			return;
 		}
-		else{
-			int row = (*mapping)[next_name];
-			int column = (*mapping)[curr_name];
-			if((*adj_mat)[row][column] != 1){
-				cout << "Error row " << row << ", column " << column << endl;
-			}
+
+		int row = (*mapping)[curr_name];
+		int column = (*mapping)[next_name];
+		if(!((*adj_mat)[row][column])) {
+			// This call is not legitimate -> response mechanism.
+			cout << "Error row " << row << ", column " << column << endl;
+			response();
+			return;
 		}
 
 		tmp = next;
 		curr = next;
 		next = tmp->next;
-	}while(next != NULL);
+	} while(next != NULL);
 }
 
 void verifyStack(){
@@ -183,7 +188,7 @@ void verifyStack(){
 	//registerFunction("bar");
 	//registerFunction("foobar");
 	// TODO: verify file? I suppose here that it is a regular file
-	int **adj_mat;
+	bool **adj_mat;
 	int edges_count;
 	map<string, int> mapping;
 	readEdges(&mapping, &adj_mat, &edges_count);
