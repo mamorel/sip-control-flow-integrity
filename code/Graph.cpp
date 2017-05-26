@@ -116,40 +116,50 @@ void Graph::writeGraphFile() {
 	vector<Vertex> paths = getPathsToSensitiveNodes();
 	ofstream outFile;
 	outFile.open("graph.txt");
+	vector<Vertex> verticesOnPath;
+	vector<Edge> edgesOnPath;
 	for(Edge &e : edges) {
-		// Only add edges that are contained in a path to a sensitive function to get a 
+		// Only add edges that are contained in a path to a sensitive function to get a
 		// smaller adjacency matrix in the stack analysis
 		if(find(paths.begin(), paths.end(), e.getDestination()) != paths.end()
 				&& find(paths.begin(), paths.end(), e.getOrigin()) != paths.end()) {
-			outFile << e.str() << endl;
+					edgesOnPath.push_back(e);
+					if( find(verticesOnPath.begin(), verticesOnPath.end(), e.getOrigin()) == verticesOnPath.end())
+						verticesOnPath.push_back(e.getOrigin());
+					if( find(verticesOnPath.begin(), verticesOnPath.end(), e.getDestination()) == verticesOnPath.end())
+						verticesOnPath.push_back(e.getDestination());
 		}
 	}
-    outFile.close();
+	outFile << verticesOnPath.size() << endl;
+	outFile << edgesOnPath.size() << endl;
+	for(Edge &e : edgesOnPath)
+		outFile << e.str() << "\n";
+  outFile.close();
 
-    unsigned char c[SHA256_DIGEST_LENGTH];
-    FILE *inFile = fopen ("graph.txt", "rb");
-    if(inFile == NULL) {
-        printf("graph.txt can't be opened.\n");
-        return;
-    }
-    SHA256_CTX sha256;
-    int bytes;
-	unsigned char data[1024];
-    SHA256_Init(&sha256);
-    while((bytes = fread(data, 1, 1024, inFile)) != 0)
-        SHA256_Update(&sha256, data, bytes);
-    fclose (inFile);
-
-    SHA256_Final(c, &sha256);
-
-    stringstream ss;
-    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
-    	ss << std::hex << (int)c[i];
-
-	string checksum = ss.str();
+  //   unsigned char c[SHA256_DIGEST_LENGTH];
+  //   FILE *inFile = fopen ("graph.txt", "rb");
+  //   if(inFile == NULL) {
+  //       printf("graph.txt can't be opened.\n");
+  //       return;
+  //   }
+  //   SHA256_CTX sha256;
+  //   int bytes;
+	// unsigned char data[1024];
+  //   SHA256_Init(&sha256);
+  //   while((bytes = fread(data, 1, 1024, inFile)) != 0)
+  //       SHA256_Update(&sha256, data, bytes);
+  //   fclose (inFile);
+	//
+  //   SHA256_Final(c, &sha256);
+	//
+  //   stringstream ss;
+  //   for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+  //   	ss << std::hex << (int)c[i];
+	//
+	// string checksum = ss.str();
 	// TODO: Get the checksum into StackAnalysis.c
-	// Idea: write a default checksum to the c file, copy StackAnalysis to a new file and 
-	// replace the checksum, then use the new file for compilation...	
+	// Idea: write a default checksum to the c file, copy StackAnalysis to a new file and
+	// replace the checksum, then use the new file for compilation...
 }
 
 vector<Vertex> Graph::getPathsToSensitiveNodes() {

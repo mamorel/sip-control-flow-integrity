@@ -11,7 +11,7 @@ public:
     bool operator== (const Vertex& rhs) const {
     	return (methodName == rhs.methodName);
     };
-    
+
     bool operator!= (const Vertex& rhs) const {
     	return (methodName != rhs.methodName);
     };
@@ -36,7 +36,7 @@ public:
     };
     string str() {
     	ostringstream os;
-		os << this->origin.str() << " -> " << this->destination.str();
+		os << this->origin.str() << " " << this->destination.str();
 		return os.str();
 	}
 private:
