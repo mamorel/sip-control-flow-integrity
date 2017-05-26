@@ -71,14 +71,33 @@ void deregisterFunction(char functionName[]) {
 	printf("\n");
 }
 
-int find(char *** list, char * str, int len){
-	for (int i = 0 ; i < len ; i++){
-		//printf("Comparing: %s and %s\n", (*list)[i], str);
-		if (strcmp((*list)[i], str) == 0)
-			return i;
+/**
+ * Binary search: O(log(n)), only works for sorted list!
+ */
+int binarySearch(char ***list, char *str, int len) {
+	int start = 0, end = len;
+	int pos;
+	while(end >= start) {
+		pos = start + ((end-start) / 2);
+		if(strcmp((*list)[pos], str) == 0) {
+			return pos;
+		} else if(start == end) {
+			return -1;
+		} else if(strcmp((*list)[pos], str) < 0) {
+			start = pos+1;
+		} else {
+			end = pos;
+		}
 	}
 	return -1;
 }
+
+int stringcmp(const void *a, const void *b) { 
+    const char **ia = (const char **)a;
+    const char **ib = (const char **)b;
+    return strcmp(*ia, *ib);
+}
+
 /*
 * Reads known edges from file 'X.txt' line by line.
 * Returns pointer to array of known edges and number of edges read.
@@ -159,7 +178,7 @@ void readEdges(char ***mapping, int ***adj_mat, int *vertices_count){
 			strncpy(buffer[count], toks, length);
 			count++;
 			//printf("Tok: %s\n", toks);
-			int found = find(mapping, toks, next);
+			int found = binarySearch(mapping, toks, next);
 			if (found == -1){
 				strncpy((*mapping)[next], toks, len);
 				next++;
@@ -168,13 +187,15 @@ void readEdges(char ***mapping, int ***adj_mat, int *vertices_count){
 		}while(toks != NULL);
 	}
 
-	for (int i = 0 ; i < next ; i++){
+	qsort(*mapping, *vertices_count, sizeof(char *), stringcmp);
+
+	for (int i = 0 ; i < *vertices_count ; i++) {
 		printf("List[%d]=%s\n", i, (*mapping)[i]);
 	}
 
 	for (int i = 0; i < 2*line_count; i+=2){
-		int row = find(mapping, buffer[i], *vertices_count);
-		int col = find(mapping, buffer[i+1], *vertices_count);
+		int row = binarySearch(mapping, buffer[i], *vertices_count);
+		int col = binarySearch(mapping, buffer[i+1], *vertices_count);
 		if (row == -1 || col == -1){
 			printf("Unexpected row/col for %s -> %s\n", buffer[i], buffer[i+1]);
 		}
@@ -190,47 +211,51 @@ void readEdges(char ***mapping, int ***adj_mat, int *vertices_count){
 }
 
 void response(){
-	//cout << "Response mechanism.\n";
+	printf("Response mechanism.\n");
 	//exit(1);
 }
 
-void verify(char ***mapping, int ***adj_mat, int vertices_count){
+void verify(char ***mapping, int ***adj_mat, int vertices_count) {
 	node_t *curr = stack, *next;
 	char *curr_name;
 	char *next_name;
 
-	if(curr == NULL || curr->next == NULL){
+	if(curr == NULL || curr->next == NULL) {
 		return;
 	}
 	next = curr->next;
 
-	do{
+	do {
 		curr_name = curr->value;
 		next_name = next->value;
 		printf("Checking edge: %s -> %s\n", next_name, curr_name);
 
-		int col = find(mapping, curr_name, vertices_count);
-		int row = find(mapping, next_name, vertices_count);
+		int col = binarySearch(mapping, curr_name, vertices_count);
+		int row = binarySearch(mapping, next_name, vertices_count);
 
 		if( row == -1) {
-			printf("Could not find function %s\n", curr_name);
+			printf("Could not find function %s. => Invalid call to sensitive function!\n", curr_name);
 			response();
+			return;
 		}
-		else if ( col == -1){
-			printf("Could not find function %s\n", next_name);
+		if ( col == -1){
+			printf("Could not find function %s. => Invalid call to sensitive function!\n", next_name);
 			response();
+			return;
 		}
-		else{
-			if((*adj_mat)[row][col] != 1){
-				printf("Error row %d, col %d\n", row, col);
-			}
+		if((*adj_mat)[row][col] != 1){
+			printf("Error row %d, col %d. => Invalid call to sensitive function!\n", row, col);
+			response();
+			return;
 		}
 		curr = next;
 		next = curr->next;
-		}while(next != NULL);
+		} while(next != NULL);
+		
+		printf("Valid access to sensitive function! :-)\n");
 }
 
-void verifyStack(){
+void verifyStack() {
 	//registerFunction("main");
 	//registerFunction("bar");
 	//registerFunction("foobar");
