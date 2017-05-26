@@ -17,6 +17,12 @@ char **mapping;
 char **adj_mat;
 int vertices_count;
 
+unsigned char checksum[SHA256_DIGEST_LENGTH] = {
+	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+	0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13,
+	0x14, 0x15, 0x16, 0x17, 0x018, 0x19, 0x1a, 0x1b, 0x1c, 0x1d,
+  0x1e, 0x1f};
+
 void registerFunction(char functionName[]);
 void deregisterFunction(char functionName[]);
 
@@ -71,6 +77,28 @@ void deregisterFunction(char functionName[]) {
 	printf("\n");
 }
 
+int verifyChecksum(){
+	printf("Verifying checksum...\n");
+	FILE *fp = fopen("graph.txt", "rb");
+	if (fp == NULL){
+		fprintf(stderr, "Could not open 'graph.txt'\n");
+		exit(1);
+	}
+	unsigned char hash[SHA256_DIGEST_LENGTH];
+	SHA256_CTX sha;
+	SHA256_Init(&sha);
+
+	char buf[1024];
+	int r;
+
+	while(( r = fread(buf, 1, sizeof(buf), fp)) > 0){
+		SHA256_Update(&sha, buf, r);
+	}
+	SHA256_Final(hash, &sha);
+
+	return (memcmp(hash, checksum, SHA256_DIGEST_LENGTH) == 0);
+}
+
 /**
  * Binary search: O(log(n)), only works for sorted list!
  */
@@ -92,7 +120,7 @@ int binarySearch(char ***list, char *str, int len) {
 	return -1;
 }
 
-int stringcmp(const void *a, const void *b) { 
+int stringcmp(const void *a, const void *b) {
     const char **ia = (const char **)a;
     const char **ib = (const char **)b;
     return strcmp(*ia, *ib);
@@ -251,7 +279,7 @@ void verify(char ***mapping, char ***adj_mat, int vertices_count) {
 		curr = next;
 		next = curr->next;
 		} while(next != NULL);
-		
+
 		printf("Valid access to sensitive function! :-)\n");
 }
 
@@ -261,6 +289,11 @@ void verifyStack() {
 	//registerFunction("foobar");
 	// TODO: verify file? I suppose here that it is a regular file
 	if(!built_matrix){
+		if (!verifyChecksum()){
+			printf("Wrong hash\n");
+			response();
+			return;
+		}
 		readEdges(&mapping, &adj_mat, &vertices_count);
 		built_matrix = 1;
 		for(int j = 0 ; j < vertices_count ; j ++){

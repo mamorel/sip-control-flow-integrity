@@ -1,5 +1,6 @@
 #include <vector>
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <map>
 #include <sstream>
@@ -115,6 +116,8 @@ vector<Vertex> Graph::getSensitiveNodes() {
 void Graph::writeGraphFile() {
 	vector<Vertex> paths = getPathsToSensitiveNodes();
 	ofstream outFile;
+	ofstream outChecksum;
+
 	outFile.open("graph.txt");
 	vector<Vertex> verticesOnPath;
 	vector<Edge> edgesOnPath;
@@ -157,9 +160,15 @@ void Graph::writeGraphFile() {
 
 	stringstream ss;
 	for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
-		ss << std::hex << (int)c[i];
+		ss << setfill('0') << setw(2) << std::hex << (int)c[i];
 
 	string checksum = ss.str();
+
+	// Write checksum to file
+	outChecksum.open("checksum.txt");
+	outChecksum << checksum << endl;
+	outChecksum.close();
+	return;
 	// TODO: Get the checksum into StackAnalysis.c
 	// Idea: write a default checksum to the c file, copy StackAnalysis to a new file and
 	// replace the checksum, then use the new file for compilation...
