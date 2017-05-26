@@ -47,26 +47,30 @@ private:
 
 class Graph {
 public:
-    Graph();
-    bool contains(Vertex v);
-    void insert(Vertex v);
+	Graph();
+	bool contains(Vertex v);
+	void insert(Vertex v);
 
-    void printGraph();
+	void printGraph();
 
-    int addEdge(Vertex origin, Vertex destination);
+	int addEdge(Vertex origin, Vertex destination);
 
-    vector<Vertex> getCallees(Vertex v);
+	vector<Vertex> getCallees(Vertex v);
 
-    vector<Vertex> getCallers(Vertex v);
+	vector<Vertex> getCallers(Vertex v);
 
-    Vertex getFirstNode();
-    
-    vector<Vertex> getLastNodes();
-    
-    vector<Edge> getEdges();
-    
-    void writeGraphFile();
-    
+	Vertex getFirstNode();
+
+	vector<Vertex> getLastNodes();
+
+	vector<Vertex> getSensitiveNodes();
+
+	vector<Edge> getEdges();
+
+	void writeGraphFile();
+
+	vector<Vertex> getPathsToSensitiveNodes();
+
     string str() {
     	ostringstream os;
 		for(Edge e : this->edges)

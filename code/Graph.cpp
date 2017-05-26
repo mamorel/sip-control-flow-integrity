@@ -102,10 +102,28 @@ vector<Vertex> Graph::getLastNodes() {
 	return result;
 }
 
+vector<Vertex> Graph::getSensitiveNodes() {
+	vector<Vertex> result;
+	for(Vertex &v : vertices) {
+		if(v.isSensitive()) {
+			result.push_back(v);
+		}
+	}
+	return result;
+}
+
 void Graph::writeGraphFile() {
+	vector<Vertex> paths = getPathsToSensitiveNodes();
 	ofstream outFile;
 	outFile.open("graph.txt");
-	outFile << this->str();
+	for(Edge &e : edges) {
+		// Only add edges that are contained in a path to a sensitive function to get a 
+		// smaller adjacency matrix in the stack analysis
+		if(find(paths.begin(), paths.end(), e.getDestination()) != paths.end()
+				&& find(paths.begin(), paths.end(), e.getOrigin()) != paths.end()) {
+			outFile << e.str() << endl;
+		}
+	}
     outFile.close();
 
     unsigned char c[SHA256_DIGEST_LENGTH];
@@ -132,4 +150,20 @@ void Graph::writeGraphFile() {
 	// TODO: Get the checksum into StackAnalysis.c
 	// Idea: write a default checksum to the c file, copy StackAnalysis to a new file and 
 	// replace the checksum, then use the new file for compilation...	
+}
+
+vector<Vertex> Graph::getPathsToSensitiveNodes() {
+	vector<Vertex> pathToSensitiveFunctions = getSensitiveNodes();
+	int size = pathToSensitiveFunctions.size();
+	for(int i = 0; i < size; i++) {
+		vector<Vertex> newDominators = getCallers(pathToSensitiveFunctions[i]);
+		for(auto it = newDominators.begin() ; it != newDominators.end() ; ++it) {
+			if(find(pathToSensitiveFunctions.begin(), pathToSensitiveFunctions.end(), *it)
+					== pathToSensitiveFunctions.end()) {
+				pathToSensitiveFunctions.push_back(*it);
+				size++;
+			}
+		}
+	}
+	return pathToSensitiveFunctions;
 }
