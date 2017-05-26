@@ -130,33 +130,36 @@ void Graph::writeGraphFile() {
 						verticesOnPath.push_back(e.getDestination());
 		}
 	}
+	sort(edgesOnPath.begin(), edgesOnPath.end(), [](Edge e1, Edge e2)->bool{
+		return e1.getDestination().str() < e2.getDestination().str();
+	});
 	outFile << verticesOnPath.size() << endl;
 	outFile << edgesOnPath.size() << endl;
 	for(Edge &e : edgesOnPath)
 		outFile << e.str() << "\n";
-  outFile.close();
+	outFile.close();
 
-  //   unsigned char c[SHA256_DIGEST_LENGTH];
-  //   FILE *inFile = fopen ("graph.txt", "rb");
-  //   if(inFile == NULL) {
-  //       printf("graph.txt can't be opened.\n");
-  //       return;
-  //   }
-  //   SHA256_CTX sha256;
-  //   int bytes;
-	// unsigned char data[1024];
-  //   SHA256_Init(&sha256);
-  //   while((bytes = fread(data, 1, 1024, inFile)) != 0)
-  //       SHA256_Update(&sha256, data, bytes);
-  //   fclose (inFile);
-	//
-  //   SHA256_Final(c, &sha256);
-	//
-  //   stringstream ss;
-  //   for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
-  //   	ss << std::hex << (int)c[i];
-	//
-	// string checksum = ss.str();
+	unsigned char c[SHA256_DIGEST_LENGTH];
+	FILE *inFile = fopen ("graph.txt", "rb");
+	if(inFile == NULL) {
+		printf("graph.txt can't be opened.\n");
+		return;
+	}
+	SHA256_CTX sha256;
+	int bytes;
+	unsigned char data[1024];
+	SHA256_Init(&sha256);
+	while((bytes = fread(data, 1, 1024, inFile)) != 0)
+		SHA256_Update(&sha256, data, bytes);
+	fclose (inFile);
+
+	SHA256_Final(c, &sha256);
+
+	stringstream ss;
+	for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+		ss << std::hex << (int)c[i];
+
+	string checksum = ss.str();
 	// TODO: Get the checksum into StackAnalysis.c
 	// Idea: write a default checksum to the c file, copy StackAnalysis to a new file and
 	// replace the checksum, then use the new file for compilation...
