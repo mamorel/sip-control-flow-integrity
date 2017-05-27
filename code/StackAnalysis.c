@@ -139,7 +139,7 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 	if(DEBUG) printf("Reading edges...\n");
 	FILE *fp;
 	int length = 12;
-	size_t len = 12; // Better for our tests, getline reallocs buffer and len if it's too small
+	size_t len = 12;// getline reallocs (doubles) buffer and len if it's too small
 	ssize_t r;
 	char * l = (char *)malloc(length*sizeof(char));
 
@@ -165,13 +165,6 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 		fprintf(stderr, "Failed to alloc buffer.\n");
 		exit(1);
 	}
-	for (int i = 0 ; i < 2*line_count ; i++){
-		buffer[i] = (char *)malloc(length*sizeof(char));
-		if (buffer[i] == NULL){
-			fprintf(stderr, "Failed to alloc buffer[%d].", i);
-			exit(1);
-		}
-	}
 	if(DEBUG) printf("Allocated buffer\n");
 
 	// Alloc mapping
@@ -179,14 +172,6 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 	if (*mapping == NULL){
 		fprintf(stderr, "Failed to alloc mapping.\n");
 		exit(1);
-	}
-	for(int i = 0 ; i < *vertices_count ; i++){
-		(*mapping)[i] = (char *)malloc(length * sizeof(char));
-		if ((*mapping)[i] == NULL){
-			fprintf(stderr, "Failed to alloc mapping[%d].\n", i);
-			exit(1);
-		}
-		memset((*mapping)[i], 0, length);
 	}
 	if(DEBUG) printf("Allocated mapping\n");
 
@@ -211,11 +196,13 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 		toks[strcspn(toks, "\n")] = 0;
 
 		while(toks != NULL){
+			buffer[count] = (char *)malloc(len*sizeof(char));
 
-			strncpy(buffer[count], toks, length);
+			strncpy(buffer[count], toks, len);
 			count++;
-			int found = binarySearch(mapping, toks, next);
+			int found = binarySearch(mapping, toks, next-1);
 			if (found == -1){
+				(*mapping)[next] = (char *) malloc(len * sizeof(char));
 				strncpy((*mapping)[next], toks, len);
 				next++;
 				qsort(*mapping, next, sizeof(char *), stringcmp);
