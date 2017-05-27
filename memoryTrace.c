@@ -15,7 +15,6 @@ void bar() {
 
 void foo() {
 	counter--;
-	printf("Counter: %d\n", counter);
 	if(counter > 0)
 		bar();
 	else

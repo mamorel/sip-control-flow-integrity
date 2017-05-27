@@ -125,13 +125,6 @@ int binarySearch(char ***list, char *str, int len) {
 	return -1;
 }
 
-int find(char ***list, char *str, int len) {
-	for(int i = 0; i < len; i++) {
-		if(strcmp((*list)[i], str) == 0) return i;
-	}
-	return -1;
-}
-
 int stringcmp(const void *a, const void *b) {
     const char **ia = (const char **)a;
     const char **ib = (const char **)b;
@@ -145,8 +138,8 @@ int stringcmp(const void *a, const void *b) {
 void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 	if(DEBUG) printf("Reading edges...\n");
 	FILE *fp;
-	int length = 256;
-	size_t len = 256; // might want to fix that later
+	int length = 20;
+	size_t len = 20; // might want to fix that later
 	ssize_t r;
 	char * l = (char *)malloc(length*sizeof(char));
 
@@ -221,18 +214,17 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 
 			strncpy(buffer[count], toks, length);
 			count++;
-			int found = find(mapping, toks, next);
+			int found = binarySearch(mapping, toks, next);
 			if (found == -1){
 				strncpy((*mapping)[next], toks, len);
 				next++;
+				qsort(*mapping, next, sizeof(char *), stringcmp);
 			}
 			toks = strtok(NULL, " ");
 			if(toks != NULL)
 				toks[strcspn(toks, "\n")] = 0;
 		}while(toks != NULL);
 	}
-
-	qsort(*mapping, *vertices_count, sizeof(char *), stringcmp);
 
 	if(DEBUG) {
 		for (int i = 0 ; i < *vertices_count ; i++) {
@@ -328,4 +320,5 @@ void verifyStack() {
 	}
 
 	verify(&mapping, &adj_mat, vertices_count);
+	
 }
