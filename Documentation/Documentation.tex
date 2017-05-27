@@ -238,20 +238,19 @@ Such improvements however appear specific to the application to protect. We ther
 \subsection{Memory Consumption}
 In contrast to the original program, we manage the shadow stack on runtime of the program and also verify the stack trace against a known good execution. We therefore introduce memory overhead to the application. In order to keep the solution usable, this overhead needs to be as small as possible. To test the memory consumption of our implementation, we wrote a simple and small test program. Effectively, it only contains of a main-method and 3 methods that recursively call each other until a counter expires, then a sensitive function is called. This program presents the worst case for our tool as it hardly consumes any memory, every path leads to the call of a sensitive function and the shadow stack always increases.
 
-In an experimental setup, we traced the consumption of the heap using valgrind and the memcheck tool. The results are shown in \autoref{fig:memory}. The red line shows the memory used by the instrumented program whereas the blue line shows the original one. We ran the program for increasing number of loops and could detect that the additional memory consumption for increasing loop count remains small. However, even at the beginning, the maximal memory consumption is almost 13 times as high as for the original program. Manual inspection of the traces revealed that the allocation explodes when we read the edges from of the file and store them in the adjacency matrix.
+In an experimental setup, we traced the consumption of the heap using valgrind and the memcheck tool. The results are shown in \autoref{fig:memory}. The red line shows the memory used by the instrumented program whereas the blue line shows the original one. We ran the program for increasing number of loops and could detect that the additional memory consumption for increasing loop count remains small. However, even at the beginning, the maximal memory consumption is around 10 times as high as for the original program. Manual inspection of the traces revealed that the allocation explodes when we read the edges from of the file and store them in the adjacency matrix.
 \pgfplotstableread{
 i orig mod
-0 1024 13856
-1 1024 13856
-2 1024 13888
-3 1024 13920
-4 1024 13952
-5 1024 13984
-6 1024 14016
-7 1024 14048
-8 1024 14080
-9 1024 14112
-10 1024 14144
+0 1024 10684
+1 1024 10716
+2 1024 10748
+3 1024 10780
+4 1024 10812
+5 1024 10844
+6 1024 10876
+7 1024 10908
+8 1024 10940
+9 1024 10972
 }\datatable
 
 \begin{figure}
@@ -261,7 +260,7 @@ i orig mod
      \begin{axis}[
      	xlabel={Loops in program},
      	ylabel={Heap consumption [bytes]},
-     	ytick={0,1000,5000,10000,15000}]
+     	ytick={0,1000,5000,10000,11000}]
 	\addplot table [y=orig] {\datatable};
 	\addplot table [y=mod] {\datatable};
       \end{axis}

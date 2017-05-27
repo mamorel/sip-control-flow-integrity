@@ -138,8 +138,8 @@ int stringcmp(const void *a, const void *b) {
 void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 	if(DEBUG) printf("Reading edges...\n");
 	FILE *fp;
-	int length = 20;
-	size_t len = 20; // might want to fix that later
+	int length = 12;
+	size_t len = 12; // Better for our tests, getline reallocs buffer and len if it's too small
 	ssize_t r;
 	char * l = (char *)malloc(length*sizeof(char));
 
