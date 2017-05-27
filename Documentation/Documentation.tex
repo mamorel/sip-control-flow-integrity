@@ -271,18 +271,97 @@ i orig mod
   \vspace{-0.4cm}
 \end{figure}
 
+\subsection{Protection Time}
+We used the \texttt{time} command to measure the time necessary to run our pass and compile the binary 50 times to get more precise estimations.\\
+These results were obtained on a Lenovo ThinkPad X250 laptop with an Intel i5-5200U, 8GB of RAM running Manjaro 17.0.1 and Linux kernel 4.9.
+We used as input the same simple program used in the memory consumption evaluation, consisting of 3 simple functions and then added other dummy functions. Results are shown in \autoref{table:protectionTime}.
+
+There does not seem to be any major increase in the protection time as the input program grows a little bit larger and as additional sensitive functions are protected. Our pass iterates over the basic blocks of each function of the input source file to inject calls to the functions building the shadow stack. The more functions, the more iterations will be performed, simply injecting function calls does not seem like a computationally intensive task. Protecting more functions just results in additional calls to the \texttt{verifyStack} function being injected, which should not really increase the protection time by much.
+
+Note that the functions in our test program are very small and only consist of few statements. As the llvm pass iterates over all statements, the number of statements is essential for the protection time rather than the number of methods. An indicator for the number of statements is the size of the binary file resulting from the uninstrumented program. Using real input source files with bigger functions could result in an increase in the protection time. Considering the results obtained with the simple source files and the fact that the protection only need to be run once, we believe that protection time should not be an issue.
+
+\begin{table}
+  \centering \scalebox{1.0}{
+  \begin{tabular}{| c | c | c | c |}
+    \hline
+    Number of functions & Binary size (byte) & Sensitive Functions & Protection Time (s)\\
+    \hline
+    3 & 8,776 & 1 & 13.329\\
+    \hline
+    3 & 8,776 & 2 & 13.361\\
+    \hline
+    3 & 8,776 & 3 & 13.163\\
+    \hline
+    6 & & 1 & 13.709\\
+    \hline
+    6 & & 2 & 13.980\\
+    \hline
+    6 & & 3 & 13.959\\
+    \hline
+    6 & & 4 & 13.733\\
+    \hline
+    6 & & 5 & 13.853\\
+    \hline
+    6 & & 6 & 13.670\\
+    \hline
+    10 & & 1 & 14.418\\
+    \hline
+    10 & & 2 & 14.191\\
+    \hline
+    10 & & 3 & 14.258\\
+    \hline
+  \end{tabular}}
+  \caption{Protection time for different programs}
+  \label{table:protectionTime}
+\end{table}
 
 \section{Security Evaluation}
-The defense mechanism that we implemented essentially relies on a shadow stack built during runtime and further checked against a known call graph, which introduces several vulnerabilities and can be tricked by an attacker.\\
-As the functions used to build the shadow stack are respectively inserted at the beginning and end of every function, they can be easily found by an attacker and then disclose the shadow stack which can be further modified.\\
-On the other hand, to ensure that the call graph, written in a plain text file is not corrupted, we rely on a SHA256 digest.
-If an attacker gets access to this digest in the binary, she can completely defeat the whole scheme by modifying the reference call graph as she pleases.
-An additional layer of obfuscation or the use of white-box cryptography seems therefore necessary to make to reversing task more complicated.
+The defense mechanism we implemented essentially relies on a shadow stack built during runtime and which is further checked against a known call graph. The protection scheme has two main weaknesses that can be tricked by an attacker. First, the attacker might want to manipulate the shadow stack, second she might try to modify the call graph.
 
-An attacker might also defeat our scheme by bypassing the calls to the shadow stack building functions. In the \texttt{readKey} example, an attacker can jump from any function to the \texttt{readKey} function provided that the destination is located after the call to the \texttt{registerFunction}.
+As the functions used to build the shadow stack are respectively inserted at the beginning and end of every function, they can be easily found by an attacker and then disclose the shadow stack which can be further modified. For example, it is possible to replace the function name with another one. This would allow the attacker to replace a legitimate function call with an illegitimate one. Also, the attacker could remove the push/pop operation and thus add a function call in the graph which would not be available on our shadow stack.
 
-The protected binary generated is vulnerable to various static and dynamic patching attacks. The use of a self-checksumming protection tool can therefore provide additional security and make an attacker's task even more difficult.
+Hence, the question arises if the solution built on a shadow stack is more vulnerable than other solutions. An obvious alternative to the shadow stack is accessing the real stack with the \texttt{backtrace} syscall and using this information. However, an attacker can prevent us from calling the syscall or can hook it and give us wrong information. Hence, we cannot provide any security guarantees with this scheme either.
+
+A second vulnerability is the call graph which is written in a plain text file. It is necessary to proof that this file is not corrupted. We therefore calculate a SHA256 digest over the file on instrumentation, add the digest to the instrumented program and check if the checksum is valid before we read from the file.
+
+If an attacker gets access to this digest in the binary, she can defeat the whole scheme by modifying the reference call graph as she pleases.
+A simple way to defeat this kind of attack is applying an additional layer of obfuscation to this part of the program. This would make reverse engineering more complicated.% I'm not really sure if white-box cryptography would help here. The question is: how do we derive the key? wbc gets the key from the program. If the program (or the important parts for wbc) is not modified but only the text file is corrupted, what do we gain? But yes, HMAC instead of a simple checksum would be a good improvement
+
+An attacker might also defeat our scheme by bypassing the calls to the shadow stack building functions. In the \texttt{readKey} example, an attacker can jump from any function to the \texttt{readKey} function provided that the destination is located after the call to the \texttt{registerFunction}. % I don't understand this point. The call of registerFunction is done at the beginning of the function? I think, this should be ok with the paragraph above?
+
+The protected binary generated is vulnerable to various static and dynamic patching attacks. Therefore, the use of additional protection techniques is essential to harden the approach against these attacks. E.g., it is possible to apply self-checksumming to protect the integrity of the binary. However, this can be circumvented by known attacks. We therefore propose to extract the stack tracing algorithm from the binary and run it in a secure hypervisor instead. The hypervisor could be attested with hardware support e.g. using TPM and its remote attestation support.
 
 A summary of the attacks and possible corresponding countermeasures is shown in \autoref{fig:adtree}.
+\begin{figure}[htb]
+\hspace*{-2cm} \scalebox{.6}{
+\begin{forest}
+[Authenticate Caller, proTree
+  [Static Patching
+    [Change response\\
+mechanism, proTree]
+    [Remove Stack\\
+Verification, proTree]
+    [Introspection, oppTree]
+  ]
+  [Dynamic Patching
+    [Instrument Stack\\
+Verification]
+    [Jump after shadow\\
+stack building function]
+  ]
+  [Modify Reference\\
+Call Graph
+    [Find Digest
+      [White-Box\\
+Crypto, oppTree]
+    ]
+  ]
+]
+\end{forest}}
+\caption{Attack tree against our stack trace verification scheme}
+\label{fig:attackTree}
+\end{figure}
+
+
 
 \end{document}
