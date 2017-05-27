@@ -138,10 +138,8 @@ int stringcmp(const void *a, const void *b) {
 void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 	if(DEBUG) printf("Reading edges...\n");
 	FILE *fp;
-	int length = 12;
 	size_t len = 12;// getline reallocs (doubles) buffer and len if it's too small
-	ssize_t r;
-	char * l = (char *)malloc(length*sizeof(char));
+	char * l = (char *)malloc(len*sizeof(char));
 
 	char * toks;
 
@@ -153,10 +151,10 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 		exit(1);
 	}
 
-	getline(&l, &len, fp);
+	if(getline(&l, &len, fp) == -1) return;
 	*vertices_count = strtol(l, (char **)NULL, 10);
 
-	getline(&l, &len, fp);
+	if(getline(&l, &len, fp) == -1) return;
 	int line_count = strtol(l, (char **)NULL, 10);
 
 	// alloc func buffer
@@ -191,7 +189,7 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 	if(DEBUG) printf("Allocated adj_mat\n");
 
 	int count = 0;
-	while((r = getline(&l, &len, fp)) != -1){
+	while(getline(&l, &len, fp) != -1){
 		toks = strtok(l, " ");
 		toks[strcspn(toks, "\n")] = 0;
 
@@ -284,10 +282,6 @@ void verify(char ***mapping, char ***adj_mat, int vertices_count) {
 }
 
 void verifyStack() {
-	//registerFunction("main");
-	//registerFunction("bar");
-	//registerFunction("foobar");
-	// TODO: verify file? I suppose here that it is a regular file
 	if(!built_matrix){
 		if (!verifyChecksum()){
 			printf("Wrong hash\n");
