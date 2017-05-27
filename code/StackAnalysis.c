@@ -305,7 +305,8 @@ void verify(char ***mapping, char ***adj_mat, int vertices_count) {
 		next = curr->next;
 	} while(next != NULL);
 
-		if(DEBUG) printf("Valid access to sensitive function '%s'! :-)\n", func);
+	if(DEBUG) printf("Valid access to sensitive function '%s'! :-)\n", func);
+}
 
 void verifyStack() {
 	//registerFunction("main");

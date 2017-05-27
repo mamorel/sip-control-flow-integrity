@@ -236,9 +236,41 @@ Such improvements however appear specific to the application to protect. We ther
 \section{Performance Evaluation}
 
 \subsection{Memory Consumption}
-In contrast to the original program, we manage the shadow stack on runtime of the program and also verify the stack trace against a known good execution. We therefore introduce memory overhead to the application. In order to keep the solution usable, this overhead needs to be as small as possible. To test the memory consumption of our implementation, we wrote a simple and small test program. Effectively, it only contains of a main-method and 3 methods that recursively call each other until a counter expires, then a sensitive function is called. This program presents the worst case for our tracking tool as it hardly consumes any memory, every path leads to the call of a sensitive function and the shadow stack always increases.
+In contrast to the original program, we manage the shadow stack on runtime of the program and also verify the stack trace against a known good execution. We therefore introduce memory overhead to the application. In order to keep the solution usable, this overhead needs to be as small as possible. To test the memory consumption of our implementation, we wrote a simple and small test program. Effectively, it only contains of a main-method and 3 methods that recursively call each other until a counter expires, then a sensitive function is called. This program presents the worst case for our tool as it hardly consumes any memory, every path leads to the call of a sensitive function and the shadow stack always increases.
 
-The experimental results are shown in \autoref{fig:memory}
+In an experimental setup, we traced the consumption of the heap using valgrind and the massif tool. The results are shown in \autoref{fig:memory}. The red line shows the memory used by the instrumented program whereas the blue line shows the original one. We ran the program for increasing number of loops and could detect that the memory consumption stays constant for increasing loop count. However, the maximal memory is almost 13 times as high as for the original program. Manual inspection of the traces revealed that this occurs when we read the edges from of the file and store them in the adjacency matrix.
+\pgfplotstableread{
+i orig mod
+0 1024 12832
+1 1024 12832
+2 1024 12832
+3 1024 12832
+4 1024 12832
+5 1024 12832
+6 1024 12832
+7 1024 12832
+8 1024 12832
+9 1024 12832
+10 1024 12832
+}\datatable
+
+\begin{figure}
+  \centering
+  \scalebox{0.66}{
+  \begin{tikzpicture}  
+     \begin{axis}[
+     	xlabel={Loops in program},
+     	ylabel={Heap consumption [bytes]},
+     	ytick={0,1000,5000,10000,13000}]
+	\addplot table [y=orig] {\datatable};
+	\addplot table [y=mod] {\datatable};
+      \end{axis}
+  \end{tikzpicture}}
+  \vspace{-0.4cm}
+  \caption{Used heap for test program}
+  \label{fig:memory}
+  \vspace{-0.4cm}
+\end{figure}
 
 
 \section{Security Evaluation}
