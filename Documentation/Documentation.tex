@@ -143,7 +143,7 @@ Department of Computer Science\\
 \maketitle
 
 \section{Docker image}
-The public docker hub site can be found at this link: \url{https://hub.docker.com/r/kuechlera/labinstrumenter/}
+The public docker hub site can be found at this link: \todo{Create new docker hub site \url{https://hub.docker.com/r/kuechlera/labinstrumenter/}}
 
 You can pull the image with
 \begin{lstlisting}[escapeinside={@}{@}]
@@ -187,14 +187,25 @@ The \script script is provided to ease the use of our solution. It calls the com
 \begin{lstlisting}[escapeinside={@}{@}]
   ./@\script@ src.c ./bin list.txt
 \end{lstlisting}
+
+\noindent\textbf{Integration in the Docker Image.}\newline
+The sourcecode, makefiles, binaries and scripts can be found in the \texttt{/instrumenter} directory of the docker image. The script \script is located in the directory \texttt{/instrumenter/build} together with a compiled version of the llvm pass. The sourcecode can be found in the directory \texttt{/instrumenter/code}.
 \newpage
 
 \section{Design decisions}
 In this section, we describe the design of our LLVM pass as well as the stack verification.
 
+\subsection{Injected Code}
+To grasp the stack we want to verify, we rely on building a shadow stack and thus are independent from the system's stack trace and any system calls which might be prohibited or hooked by the user. The code can be found in \stacka and consists of four major additional functions:
+\begin{itemize}
+\item \texttt{void registerFunction(char*)} pushes a new function name to the shadow stack
+\item \texttt{void deregisterFunction(char*)} pops the latest function from the shadow stack if the function name matches the argument
+\item \texttt{void verifyStack()} checks if the stack is valid. If any unexpected function call is detected, it performs a response mechanism
+\item \texttt{void response()} implements the response mechanism we perform in case an invalid stack trace is detected
+\end{itemize}
+
 \subsection{LLVM Pass}
-\todo{Collect all legitimate calls by building a call graph. Store the graph in a file}
-Our solution relies on a Function Pass. It is used to inject a function call at the beginning and end of every function defined in the input source file. These function calls are simply pushing and poping the name of the function to build a shadow stack. During the pass, we also inject a call to the function responsible for the verification of the shadow stack previously built at the entry point of each sensitive function. Finally, we inspect every function instructions and look for calls to other function to build a call graph.
+Our solution relies on a Function Pass. This path iterates over all functions that can be found in the input file to protect. We use the path to inject a function call at the beginning and end of every function defined in the input source file. These functions push and pop the function's name to a shadow stack. If the function which is instrumented can be found in the list of sensitive functions, we also inject a call to the function responsible for the verification of the shadow stack previously built at the entry point of each sensitive function. Finally, we inspect every function instructions and look for calls to other function to build a call graph.
 
 \subsection{Stack verification}
 To verify if the stack trace is legitimate, a couple of approaches are possible. In this subsection, we discuss some ideas and explain our implementation.
@@ -216,10 +227,11 @@ We use an adjacency matrix to model the known good call graph. As soon as we ent
 \subsection{Response model}
 In this subsection, we discuss some potential response models and explain the choice we made.
 
-The initial goal of this exercise was to protect sensitive functions from control flow hijacking. Exiting is therefore a natural, simple and generic response model to choose. It prevents the access to sensible functions when the control flow is abnormal as required. But here again, it might disclose information about the actual exit point of the program and disclose valuable parts of the defense mechanism to an attacker.
+Our work is motivated by the search for a method to protect sensitive functions from control flow hijacking. Exiting is therefore a natural, simple and generic response model to choose. As required, it prevents the access to sensible functions when the control flow is abnormal. But here again, it might disclose information about the actual exit point of the program and disclose valuable parts of the defense mechanism to an attacker.
 
-An additional layer of obfuscation would therefore probably be necessary to increase the difficulty for an attacker to reverse our defense scheme. One might also for instance use a set of decoy functions to which to redirect the control flow in case of an attack. We could also add some reporting functionalities to our response scheme e.g. to send an email containing the malicious stack trace observed.\\
-Such improvements however appear specific to the application to protect and we chose not to spend more time implementing additional response functionalities.
+An additional layer of obfuscation would therefore probably be necessary to increase the difficulty for an attacker to reverse our defense scheme. One might also for instance use a set of decoy functions to which we could redirect the control flow in case of an attack. We could also add some reporting functionalities to our response scheme e.g. by sending the malicious stack trace observed to a trusted server.
+
+Such improvements however appear specific to the application to protect. We therefore ship our solution with a the possibility to extend the response to any desired technique. Therefore, it is only necessary to implement the function \texttt{response()} in the file \texttt{StackAnalysis.c}.
 
 \section{Performance Evaluation}
 \section{Security Evaluation}
