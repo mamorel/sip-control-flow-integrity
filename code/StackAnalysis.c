@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <openssl/sha.h>
 #include <string.h>
+#define DEBUG 0
 
 typedef struct node {
 	char *value;
@@ -21,8 +22,6 @@ void registerFunction(char functionName[]);
 void deregisterFunction(char functionName[]);
 
 void registerFunction(char functionName[]) {
-	//printf("In function: %s\n", functionName);
-
 	node_t *next = stack;
 	while(next != NULL) {
 		if(next->value == functionName) {
@@ -36,19 +35,18 @@ void registerFunction(char functionName[]) {
 	new_node->value = functionName;
 	new_node->next = stack;
 	stack = new_node;
-
-	printf("Stack: ");
-	next = stack;
-	while(next != NULL) {
-		printf("%s ; ", next->value);
-		next = next->next;
+	if(DEBUG) {
+		printf("Stack: ");
+		next = stack;
+		while(next != NULL) {
+			printf("%s ; ", next->value);
+			next = next->next;
+		}
+		printf("\n");
 	}
-	printf("\n");
 }
 
 void deregisterFunction(char functionName[]) {
-	//printf("Exit function: %s\n", functionName);
-
 	if (stack == NULL) {
 		fprintf(stderr, "Error: No function on shadow stack that can be poped!\n");
 		return;
@@ -61,18 +59,19 @@ void deregisterFunction(char functionName[]) {
 	node_t *next_node = stack->next;
 	free(stack);
 	stack = next_node;
-
-	node_t *next = stack;
-	printf("Stack: ");
-	while(next != NULL) {
-		printf("%s ; ", next->value);
-		next = next->next;
+	if(DEBUG) {
+		node_t *next = stack;
+		printf("Stack: ");
+		while(next != NULL) {
+			printf("%s ; ", next->value);
+			next = next->next;
+		}
+		printf("\n");
 	}
-	printf("\n");
 }
 
 int verifyChecksum(){
-	printf("Verifying checksum...\n");
+	if(DEBUG) printf("Verifying checksum...\n");
 	FILE *fp = fopen("graph.txt", "rb");
 	if (fp == NULL){
 		fprintf(stderr, "Could not open 'graph.txt'\n");
@@ -89,6 +88,7 @@ int verifyChecksum(){
 		SHA256_Update(&sha, buf, r);
 	}
 	SHA256_Final(hash, &sha);
+	if(DEBUG) printf("Building checksum...\n");
 	char actualHash[65];
 	for(int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
         sprintf(actualHash + (i * 2), "%02x", hash[i]);
@@ -96,11 +96,7 @@ int verifyChecksum(){
     actualHash[64] = 0;
 
 	char *expectedHash = "123";
-
-	printf("Actual hash: %s\n", actualHash);
-	printf("Expected hash: %s\n", expectedHash);
-	printf("Equal? %d\n", strcmp(expectedHash, actualHash) == 0);
-
+	if(DEBUG) printf("Returning...\n");
 	return (strcmp(expectedHash, actualHash) == 0);
 }
 
@@ -108,19 +104,29 @@ int verifyChecksum(){
  * Binary search: O(log(n)), only works for sorted list!
  */
 int binarySearch(char ***list, char *str, int len) {
+	if(DEBUG) printf("BinarySearch\n");
 	int start = 0, end = len;
 	int pos;
 	while(end >= start) {
 		pos = start + ((end-start) / 2);
 		if(strcmp((*list)[pos], str) == 0) {
+			if(DEBUG) printf("Found\n");
 			return pos;
 		} else if(start == end) {
+			if(DEBUG) printf("Found nothing\n");
 			return -1;
 		} else if(strcmp((*list)[pos], str) < 0) {
 			start = pos+1;
 		} else {
 			end = pos;
 		}
+	}
+	if(DEBUG) printf("Found nothing\n");
+	return -1;
+}
+int find(char ***list, char *str, int len) {
+	for(int i = 0; i < len; i++) {
+		if(strcmp((*list)[i], str) == 0) return i;
 	}
 	return -1;
 }
@@ -136,7 +142,7 @@ int stringcmp(const void *a, const void *b) {
 * Returns pointer to array of known edges and number of edges read.
 */
 void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
-
+	if(DEBUG) printf("Reading edges...\n");
 	FILE *fp;
 	int length = 256;
 	size_t len = 256; // might want to fix that later
@@ -172,6 +178,7 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 			exit(1);
 		}
 	}
+	if(DEBUG) printf("Allocated buffer\n");
 
 	// Alloc mapping
 	*mapping = (char **)malloc(*vertices_count * sizeof(char *));
@@ -187,6 +194,7 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 		}
 		memset((*mapping)[i], 0, length);
 	}
+	if(DEBUG) printf("Allocated mapping\n");
 
 	// Alloc adjacency matrix
 	*adj_mat = (char **)malloc(*vertices_count * sizeof(char *));
@@ -202,6 +210,7 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 		}
 		//memset((*adj_mat)[i], 0, length);
 	}
+	if(DEBUG) printf("Allocated adj_mat\n");
 
 	int count = 0;
 	while(( r = getline(&l, &len, fp)) != -1){
@@ -211,7 +220,7 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 			strncpy(buffer[count], toks, length);
 			count++;
 			//printf("Tok: %s\n", toks);
-			int found = binarySearch(mapping, toks, next);
+			int found = find(mapping, toks, next);
 			if (found == -1){
 				strncpy((*mapping)[next], toks, len);
 				next++;
@@ -219,11 +228,15 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 			toks = strtok(NULL, " ");
 		}while(toks != NULL);
 	}
+	if(DEBUG) printf("Read mapping\n");
 
 	qsort(*mapping, *vertices_count, sizeof(char *), stringcmp);
+	if(DEBUG) printf("Sorted mapping\n");
 
-	for (int i = 0 ; i < *vertices_count ; i++) {
-		printf("List[%d]=%s\n", i, (*mapping)[i]);
+	if(DEBUG) {
+		for (int i = 0 ; i < *vertices_count ; i++) {
+			printf("List[%d]=%s\n", i, (*mapping)[i]);
+		}
 	}
 
 	for (int i = 0; i < 2*line_count; i+=2){
@@ -261,7 +274,7 @@ void verify(char ***mapping, char ***adj_mat, int vertices_count) {
 	do {
 		curr_name = curr->value;
 		next_name = next->value;
-		printf("Checking edge: %s -> %s\n", next_name, curr_name);
+		if(DEBUG) printf("Checking edge: %s -> %s\n", next_name, curr_name);
 
 		int col = binarySearch(mapping, curr_name, vertices_count);
 		int row = binarySearch(mapping, next_name, vertices_count);
@@ -285,7 +298,7 @@ void verify(char ***mapping, char ***adj_mat, int vertices_count) {
 		next = curr->next;
 		} while(next != NULL);
 
-		printf("Valid access to sensitive function! :-)\n");
+		if(DEBUG) printf("Valid access to sensitive function! :-)\n");
 }
 
 void verifyStack() {
@@ -301,11 +314,13 @@ void verifyStack() {
 		}
 		readEdges(&mapping, &adj_mat, &vertices_count);
 		built_matrix = 1;
-		for(int j = 0 ; j < vertices_count ; j ++){
-			for(int k = 0 ; k < vertices_count; k++){
-				printf("%d ", adj_mat[j][k]);
+		if(DEBUG) {
+			for(int j = 0 ; j < vertices_count ; j ++){
+				for(int k = 0 ; k < vertices_count; k++){
+					printf("%d ", adj_mat[j][k]);
+				}
+				printf("\n");
 			}
-			printf("\n");
 		}
 	}
 
