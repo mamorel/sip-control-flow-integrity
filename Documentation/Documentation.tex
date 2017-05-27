@@ -257,7 +257,7 @@ i orig mod
 \begin{figure}
   \centering
   \scalebox{0.66}{
-  \begin{tikzpicture}  
+  \begin{tikzpicture}
      \begin{axis}[
      	xlabel={Loops in program},
      	ylabel={Heap consumption [bytes]},
@@ -274,6 +274,16 @@ i orig mod
 
 
 \section{Security Evaluation}
+The defense mechanism that we implemented essentially relies on a shadow stack built during runtime and further checked against a known call graph, which introduces several vulnerabilities and can be tricked by an attacker.\\
+As the functions used to build the shadow stack are respectively inserted at the beginning and end of every function, they can be easily found by an attacker and then disclose the shadow stack which can be further modified.\\
+On the other hand, to ensure that the call graph, written in a plain text file is not corrupted, we rely on a SHA256 digest.
+If an attacker gets access to this digest in the binary, she can completely defeat the whole scheme by modifying the reference call graph as she pleases.
+An additional layer of obfuscation or the use of white-box cryptography seems therefore necessary to make to reversing task more complicated.
 
+An attacker might also defeat our scheme by bypassing the calls to the shadow stack building functions. In the \texttt{readKey} example, an attacker can jump from any function to the \texttt{readKey} function provided that the destination is located after the call to the \texttt{registerFunction}.
+
+The protected binary generated is vulnerable to various static and dynamic patching attacks. The use of a self-checksumming protection tool can therefore provide additional security and make an attacker's task even more difficult.
+
+A summary of the attacks and possible corresponding countermeasures is shown in \autoref{fig:adtree}.
 
 \end{document}
