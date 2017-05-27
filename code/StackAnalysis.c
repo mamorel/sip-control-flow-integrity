@@ -209,12 +209,11 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 			fprintf(stderr, "Failed to alloc adj_mat[%d].\n", i);
 			exit(1);
 		}
-		//memset((*adj_mat)[i], 0, length);
 	}
 	if(DEBUG) printf("Allocated adj_mat\n");
 
 	int count = 0;
-	while(( r = getline(&l, &len, fp)) != -1){
+	while((r = getline(&l, &len, fp)) != -1){
 		toks = strtok(l, " ");
 		toks[strcspn(toks, "\n")] = 0;
 
@@ -222,21 +221,18 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 
 			strncpy(buffer[count], toks, length);
 			count++;
-			//printf("Tok: %s\n", toks);
 			int found = find(mapping, toks, next);
 			if (found == -1){
 				strncpy((*mapping)[next], toks, len);
 				next++;
-				qsort(*mapping, next, sizeof(char *), stringcmp);
 			}
 			toks = strtok(NULL, " ");
 			if(toks != NULL)
 				toks[strcspn(toks, "\n")] = 0;
 		}while(toks != NULL);
 	}
-	if(DEBUG) printf("Read mapping\n");
+
 	qsort(*mapping, *vertices_count, sizeof(char *), stringcmp);
-	if(DEBUG) printf("Sorted mapping\n");
 
 	if(DEBUG) {
 		for (int i = 0 ; i < *vertices_count ; i++) {
