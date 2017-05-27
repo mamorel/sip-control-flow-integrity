@@ -154,7 +154,7 @@ void Graph::writeGraphFile() {
 		}
 	}
 	sort(edgesOnPath.begin(), edgesOnPath.end(), [](Edge e1, Edge e2)->bool{
-		return e1.getDestination().str() < e2.getDestination().str();
+		return e1.getOrigin().str() < e2.getOrigin().str();
 	});
 	outFile << verticesOnPath.size() << endl;
 	outFile << edgesOnPath.size() << endl;
