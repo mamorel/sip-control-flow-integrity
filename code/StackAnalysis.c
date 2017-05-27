@@ -203,7 +203,7 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 				(*mapping)[next] = (char *) malloc(len * sizeof(char));
 				strncpy((*mapping)[next], toks, len);
 				next++;
-				//qsort(*mapping, next, sizeof(char *), stringcmp);
+				qsort(*mapping, next, sizeof(char *), stringcmp);
 			}
 			toks = strtok(NULL, " ");
 			if(toks != NULL)

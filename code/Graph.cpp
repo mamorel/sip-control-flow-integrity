@@ -136,7 +136,6 @@ void rewriteStackAnalysis(string checksum) {
 void Graph::writeGraphFile() {
 	vector<Vertex> paths = getPathsToSensitiveNodes();
 	ofstream outFile;
-	ofstream outChecksum;
 
 	outFile.open("graph.txt");
 	vector<Vertex> verticesOnPath;
@@ -185,14 +184,8 @@ void Graph::writeGraphFile() {
 	string checksum = ss.str();
 
 	// Write checksum to file
-	outChecksum.open("checksum.txt");
-	outChecksum << checksum << endl;
-	outChecksum.close();
 	rewriteStackAnalysis(checksum);
 	return;
-	// TODO: Get the checksum into StackAnalysis.c
-	// Idea: write a default checksum to the c file, copy StackAnalysis to a new file and
-	// replace the checksum, then use the new file for compilation...
 }
 
 vector<Vertex> Graph::getPathsToSensitiveNodes() {
