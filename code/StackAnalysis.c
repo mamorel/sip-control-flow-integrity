@@ -37,13 +37,13 @@ void registerFunction(char functionName[]) {
 	new_node->next = stack;
 	stack = new_node;
 
-	printf("Stack: ");
-	next = stack;
-	while(next != NULL) {
-		printf("%s ; ", next->value);
-		next = next->next;
-	}
-	printf("\n");
+	// printf("Stack: ");
+	// next = stack;
+	// while(next != NULL) {
+	// 	printf("%s ; ", next->value);
+	// 	next = next->next;
+	// }
+	// printf("\n");
 }
 
 void deregisterFunction(char functionName[]) {
@@ -62,13 +62,13 @@ void deregisterFunction(char functionName[]) {
 	free(stack);
 	stack = next_node;
 
-	node_t *next = stack;
-	printf("Stack: ");
-	while(next != NULL) {
-		printf("%s ; ", next->value);
-		next = next->next;
-	}
-	printf("\n");
+	// node_t *next = stack;
+	// printf("Stack: ");
+	// while(next != NULL) {
+	// 	printf("%s ; ", next->value);
+	// 	next = next->next;
+	// }
+	// printf("\n");
 }
 
 int verifyChecksum(){
@@ -206,8 +206,10 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 	int count = 0;
 	while(( r = getline(&l, &len, fp)) != -1){
 		toks = strtok(l, " ");
+		toks[strcspn(toks, "\n")] = 0;
+
 		while(toks != NULL){
-			toks[strcspn(toks, "\n")] = 0;
+
 			strncpy(buffer[count], toks, length);
 			count++;
 			//printf("Tok: %s\n", toks);
@@ -215,15 +217,12 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 			if (found == -1){
 				strncpy((*mapping)[next], toks, len);
 				next++;
+				qsort(*mapping, next, sizeof(char *), stringcmp);
 			}
 			toks = strtok(NULL, " ");
+			if(toks != NULL)
+				toks[strcspn(toks, "\n")] = 0;
 		}while(toks != NULL);
-	}
-
-	qsort(*mapping, *vertices_count, sizeof(char *), stringcmp);
-
-	for (int i = 0 ; i < *vertices_count ; i++) {
-		printf("List[%d]=%s\n", i, (*mapping)[i]);
 	}
 
 	for (int i = 0; i < 2*line_count; i+=2){
@@ -256,12 +255,13 @@ void verify(char ***mapping, char ***adj_mat, int vertices_count) {
 	if(curr == NULL || curr->next == NULL) {
 		return;
 	}
+	char *func = stack->value;
 	next = curr->next;
 
 	do {
 		curr_name = curr->value;
 		next_name = next->value;
-		printf("Checking edge: %s -> %s\n", next_name, curr_name);
+		//printf("Checking edge: %s -> %s\n", next_name, curr_name);
 
 		int col = binarySearch(mapping, curr_name, vertices_count);
 		int row = binarySearch(mapping, next_name, vertices_count);
@@ -285,7 +285,7 @@ void verify(char ***mapping, char ***adj_mat, int vertices_count) {
 		next = curr->next;
 		} while(next != NULL);
 
-		printf("Valid access to sensitive function! :-)\n");
+		printf("Valid access to sensitive function '%s'! :-)\n", func);
 }
 
 void verifyStack() {
