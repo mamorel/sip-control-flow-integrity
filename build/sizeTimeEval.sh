@@ -20,20 +20,20 @@ printf "Orig: '%s' , New: '%s', runs: '%s'" "$origBinary" "$binary" "$runs"
 origBinSize=$(stat --printf="%s" ../$origBinary)
 printf "Orig binary size: %s\n" "$origBinSize"
 
-t="$(time ( for((i=0; i<runs;i++)); do ../$origBinary 100; done ) 2>&1 1>/dev/null )"
+t="$(time ( for((i=0; i<runs;i++)); do ../$origBinary 100; done ) )"
 
 printf "\tOriginal time: %s\n""$t"
 
-for connectivity in {1..6}
+for connectivity in {0..6}
 do
 	printf "\nRunning '%s' %s times\n" "$binary$connectivity" "$runs"
 
-	mv graph_$j.txt graph.txt
-	t="$(time ( for((i=0; i<runs;i++)); do ../$binary$connectivity 100; done ) 2>&1 1>/dev/null )"
+	mv graph_$connectivity.txt graph.txt
+	t="$(time ( for((i=0; i<runs;i++)); do ../$binary$connectivity 100; done ) )"
 
 	printf "\tTime for connectivity %s: %s\n" "$connectivity" "$t"
 
-	mv graph.txt graph_$j.txt
+	mv graph.txt graph_$connectivity.txt
 	size=$(stat --printf="%s" ../$binary$connectivity)
 	printf "\tBinary size for connectivity %s: %s\n" "$connectivity" "$size"
 done

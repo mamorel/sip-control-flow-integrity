@@ -56,6 +56,7 @@ void barbaz(){
 }
 
 void foobar() {
+	barbaz();
 	printf("foobar\n");
 }
 
