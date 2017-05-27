@@ -271,6 +271,49 @@ i orig mod
   \vspace{-0.4cm}
 \end{figure}
 
+\subsection{Protection Time}
+We used the \texttt{time} command to measure the time necessary to run our pass and compile the binary 50 times to get more precise estimations.\\
+These results were obtained on a Lenovo ThinkPad X250 laptop with an Intel i5-5200U, 8GB of RAM running Manjaro 17.0.1 and Linux kernel 4.9.
+We used as input the same simple program used in the memory consumption evaluation, consisting of 3 simple functions and then added other dummy functions. Results are shown in \autoref{table:protectionTime}.
+
+There does not seem to be any major increase in the protection time as the input program grows a little bit larger and as additional sensitive functions are protected. Our pass iterates over the basic blocks of each function of the input source file to inject calls to the functions building the shadow stack. The more functions, the more iterations will be performed, simply injecting function calls does not seem like a computationally intensive task. Protecting more functions just results in additional calls to the \texttt{verifyStack} function being injected, which should not really increase the protection time by much.
+
+Using real input source files with bigger functions could result in an increase in the protection time. Considering the results obtained with the simple source files and the fact that the protection only need to be run once, we believe that protection time should not be an issue.
+
+\begin{table}
+  \centering \scalebox{1.0}{
+  \begin{tabular}{| c | c | c |}
+    \hline
+    Number of functions & Sensitive Functions & Protection Time (s)\\
+    \hline
+    3 & 1 & 13.329\\
+    \hline
+    3 & 2 & 13.361\\
+    \hline
+    3 & 3 & 13.163\\
+    \hline
+    6 & 1 & 13.709\\
+    \hline
+    6 & 2 & 13.980\\
+    \hline
+    6 & 3 & 13.959\\
+    \hline
+    6 & 4 & 13.733\\
+    \hline
+    6 & 5 & 13.853\\
+    \hline
+    6 & 6 & 13.670\\
+    \hline
+    10 & 1 & 14.418\\
+    \hline
+    10 & 2 & 14.191\\
+    \hline
+    10 & 3 & 14.258\\
+    \hline
+  \end{tabular}}
+  \caption{Protection Time for different programs}
+  \label{table:protectionTime}
+\end{table}
 
 \section{Security Evaluation}
 The defense mechanism that we implemented essentially relies on a shadow stack built during runtime and further checked against a known call graph, which introduces several vulnerabilities and can be tricked by an attacker.\\
