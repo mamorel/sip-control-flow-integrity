@@ -25,9 +25,9 @@ void registerFunction(char functionName[]) {
 
 	node_t *next = stack;
 	while(next != NULL) {
-		if(next->value == functionName) {
-			return;
-		}
+		// if(next->value == functionName) {
+		// 	return;
+		// }
 		next = next->next;
 	}
 
@@ -37,13 +37,13 @@ void registerFunction(char functionName[]) {
 	new_node->next = stack;
 	stack = new_node;
 
-	// printf("Stack: ");
-	// next = stack;
-	// while(next != NULL) {
-	// 	printf("%s ; ", next->value);
-	// 	next = next->next;
-	// }
-	// printf("\n");
+	printf("Stack: ");
+	next = stack;
+	while(next != NULL) {
+		printf("%s ; ", next->value);
+		next = next->next;
+	}
+	printf("\n");
 }
 
 void deregisterFunction(char functionName[]) {
@@ -62,13 +62,13 @@ void deregisterFunction(char functionName[]) {
 	free(stack);
 	stack = next_node;
 
-	// node_t *next = stack;
-	// printf("Stack: ");
-	// while(next != NULL) {
-	// 	printf("%s ; ", next->value);
-	// 	next = next->next;
-	// }
-	// printf("\n");
+	node_t *next = stack;
+	printf("Stack: ");
+	while(next != NULL) {
+		printf("%s ; ", next->value);
+		next = next->next;
+	}
+	printf("\n");
 }
 
 int verifyChecksum(){
