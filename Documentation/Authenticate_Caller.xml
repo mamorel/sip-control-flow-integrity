@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><adtree>
+  <node refinement="disjunctive">
+    <label>Authenticate Caller</label>
+    <node refinement="disjunctive">
+      <label>Static Patching</label>
+      <node refinement="disjunctive">
+        <label>Change response
+mechanism</label>
+      </node>
+      <node refinement="disjunctive">
+        <label>Remove Stack
+Verification</label>
+      </node>
+      <node refinement="disjunctive" switchRole="yes">
+        <label>Introspection</label>
+      </node>
+    </node>
+    <node refinement="disjunctive">
+      <label>Dynamic Patching</label>
+      <node refinement="disjunctive">
+        <label>Instrument Stack
+Verification</label>
+      </node>
+      <node refinement="disjunctive">
+        <label>Jump after shadow
+stack building function</label>
+      </node>
+    </node>
+    <node refinement="disjunctive">
+      <label>Modify Reference
+Call Graph</label>
+      <node refinement="disjunctive">
+        <label>Find Digest</label>
+        <node refinement="disjunctive" switchRole="yes">
+          <label>White-Box
+Crypto</label>
+        </node>
+      </node>
+    </node>
+  </node>
+</adtree>
