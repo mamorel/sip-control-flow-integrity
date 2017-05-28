@@ -384,8 +384,6 @@ If an attacker gets access to this digest in the binary, she can defeat the whol
 A simple way to defeat this kind of attack is applying an additional layer of obfuscation to this part of the program. This would make reverse engineering more complicated.
 Also, it is possible to calculate an HMAC over the graph.txt file instead of only a simple digest. To avoid storing the key in plain text in the binary, it is possible to apply white-box cryptography.
 
-An attacker might also defeat our scheme by bypassing the calls to the shadow stack building functions. In the \texttt{readKey} example, an attacker can jump from any function to the \texttt{readKey} function provided that the destination is located after the call to the \texttt{registerFunction}. % I don't understand this point. The call of registerFunction is done at the beginning of the function? I think, this should be ok with the paragraph above?
-
 The protected binary generated is vulnerable to various static and dynamic patching attacks. Therefore, the use of additional protection techniques is essential to harden the approach against these attacks. E.g., it is possible to apply self-checksumming to protect the integrity of the binary. However, this can be circumvented by known attacks. We therefore propose to extract the stack tracing algorithm from the binary and run it in a secure hypervisor instead. The hypervisor could be attested with hardware support e.g. using TPM and its remote attestation support.
 
 A summary of the attacks and possible corresponding countermeasures is shown in \autoref{fig:attackTree}.
@@ -428,6 +426,8 @@ It is able to replace the original \texttt{graph.txt}-file with a new one and au
   ./compile.sh ../memoryTrace3.c ./memoryTrace sensitiveList.txt
   # now, copy the graph.txt file to newGraph.txt and edit the new file
   # (e.g. change the number of functions and edges and add a new edge)
+  # (note that you might want to adapt the first two lines of the new graph file accordingly:)
+  # (the first line is the number of vertices, the second is the number of edges)
   cd ../attack
   ./modifyGraph.sh ../build/memoryTrace ../build/newGraph.txt ../build/graph.txt
   cd ../build
