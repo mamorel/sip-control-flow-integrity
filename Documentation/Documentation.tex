@@ -417,8 +417,11 @@ Crypto, oppTree]
 \label{fig:attackTree}
 \end{figure}
 
-\section{Automated attack}
-In the directory \texttt{/instrumenter/attack} of our docker image, we provide a script that can automatically runs one of the attacks we already discussed above.
+\section{Automated attacks}
+We discussed in the previous section several vulnerabilities of our protection scheme. In this section we present some actual automated attack implementations. \todo{Is the ``/instrumenter/'' path still right with the new docker image?}
+
+\subsection{Bypassing the integrity check}
+In the directory \texttt{/instrumenter/attack} of our docker image, we provide a script that can automatically run one of the attacks we already discussed above.
 
 It is able to replace the original \texttt{graph.txt}-file with a new one and automatically patches the correct checksum into the binary. E.g. to modify the binary built from the \texttt{memoryTrace3.c} file, run the following commands:
 \begin{lstlisting}[basicstyle=\scriptsize]
@@ -434,6 +437,19 @@ It is able to replace the original \texttt{graph.txt}-file with a new one and au
   ./memoryTrace 2
 \end{lstlisting}
 Now, the binary \texttt{memoryTrace} was run with the new, extended graph.
+
+\subsection{Bypassing the stack verification}
+In the same \texttt{/instrumenter/attack} directory, we also provide a script to patch the protected binary and completely bypass the stack verification. It simply inserts a sequence of \texttt{NOP} instructions in place of the call that performs the actual verification of the stack.
+
+It expects as argument the name of the binary to patch and will produce a new binary by appending ``\_nop'' to the original binary's name. It can be run as follows:
+\begin{lstlisting}[basicstyle=\scriptsize]
+  cd /instrumenter/build
+  ./compile.sh ../memoryTrace3.c ./memoryTrace sensitiveList.txt
+  python ../attack/patchStackVerif.py ./memoryTrace
+  chmod +x ./memoryTrace_nop
+  ./memoryTrace_nop 1
+\end{lstlisting}
+The stack is not checked in the binary \texttt{memoryTrace\_nop}.
 
 \section{Conclusion}
 Our work is motivated by the search for a purely software-based and highly precise stack verification technique to protect sensitive functions from illegitimate calls. We presented a technique that can instrument any C program to perform stack verification on runtime. Experimental results showed that our scheme requires low overhead of runtime and reasonable overhead of memory consumption. Also, we can guarantee that the scheme introduces no false positives or false negatives. This is encouraging and indicates the high practical relevance of our approach.
