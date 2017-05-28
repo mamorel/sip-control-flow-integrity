@@ -16,7 +16,7 @@ oldDigest=`openssl dgst -sha256 $3`
 IFS=' ' read -r -a array <<< "$oldDigest"
 echo ${array[1]}
 
-mv "$2" "$3" 
+cp "$2" "$3" 
 
 newDigest=`openssl dgst -sha256 $3`
 IFS=' ' read -r -a array2 <<< "$newDigest"
