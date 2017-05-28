@@ -388,28 +388,24 @@ The protected binary generated is vulnerable to various static and dynamic patch
 
 A summary of the attacks and possible corresponding countermeasures is shown in \autoref{fig:attackTree}.
 \begin{figure}[htb]
-\hspace*{-2cm} \scalebox{.6}{
+\hspace*{-2.3cm} \scalebox{.6}{
 \begin{forest}
 [Authenticate Caller, proTree
-  [Static Patching
-    [Change response\\
-mechanism, proTree]
-    [Remove Stack\\
-Verification, proTree]
-    [Introspection, oppTree]
+  [Runtime modifications
+    [Instrument Stack\\Verification]
+    [Jump after\\shadow stack\\building function]
   ]
-  [Dynamic Patching
-    [Instrument Stack\\
-Verification]
-    [Jump after shadow\\
-stack building function]
-  ]
-  [Modify Reference\\
-Call Graph
+  [Modify Reference\\Call Graph
     [Find Digest
-      [White-Box\\
-Crypto, oppTree]
+      [HMAC \& White-\\Box Crypto, oppTree]
     ]
+  ]
+  [Static/Dynamic Patching
+    [Change response\\mechanism, proTree]
+    [Instrument Stack\\Verification,proTree]
+    [Remove Stack\\Verification, proTree]
+    [Introspection, oppTree]
+    [Hardware-based\\protection, oppTree]
   ]
 ]
 \end{forest}}
@@ -418,7 +414,7 @@ Crypto, oppTree]
 \end{figure}
 
 \section{Automated attacks}
-We discussed in the previous section several vulnerabilities of our protection scheme. In this section we present some actual automated attack implementations. \todo{Is the ``/instrumenter/'' path still right with the new docker image?}
+We discussed in the previous section several vulnerabilities of our protection scheme. In this section we present some actual automated attack implementations.
 
 \subsection{Bypassing the integrity check}
 In the directory \texttt{/instrumenter/attack} of our docker image, we provide a script that can automatically run one of the attacks we already discussed above.
