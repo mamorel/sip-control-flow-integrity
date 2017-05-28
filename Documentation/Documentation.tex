@@ -153,17 +153,26 @@ You can pull the image with
 \section{Individual effort}
 Alexander:
 \begin{itemize}
-  \item
+  \item First implementation of FunctionPass
+  \item Implementation of graph
+  \item Implementation of shadow stack
+  \item Conceptualization of stack analysis
+  \item Performance optimizations of stack analysis
+  \item Memory overhead analysis
 \end{itemize}
 Martin:
 \begin{itemize}
-  \item
+  \item First attempt at implementing LLVM SCC pass
+  \item Extended functionality of FunctionPass
+  \item Implementation of stack analysis (incl. response model, ...)
+  \item Implementation of compile scripts
+  \item Performance analysis
+  \item Security analysis
 \end{itemize}
 
 \newpage
 
 \section{Tool usage documentation}
-\todo{This might change...}\\
 Our solution consists of the following components:
 \begin{itemize}
   \item LLVM Function Pass (\llvmpass), building the call graph, injecting code to build a shadow stack and to verify it whenever a sensitive function is entered.
