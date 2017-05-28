@@ -143,11 +143,11 @@ Department of Computer Science\\
 \maketitle
 
 \section{Docker image}
-The public docker hub site can be found at this link: \todo{Create new docker hub site \url{https://hub.docker.com/r/kuechlera/labinstrumenter/}}
+The public docker hub site can be found at this link: \url{https://hub.docker.com/r/kuechlera/stacktracer/}
 
 You can pull the image with
 \begin{lstlisting}[escapeinside={@}{@}]
-    docker pull kuechlera/labinstrumenter
+    docker pull kuechlera/stacktracer
 \end{lstlisting}
 
 \section{Individual effort}
@@ -384,8 +384,6 @@ If an attacker gets access to this digest in the binary, she can defeat the whol
 A simple way to defeat this kind of attack is applying an additional layer of obfuscation to this part of the program. This would make reverse engineering more complicated.
 Also, it is possible to calculate an HMAC over the graph.txt file instead of only a simple digest. To avoid storing the key in plain text in the binary, it is possible to apply white-box cryptography.
 
-An attacker might also defeat our scheme by bypassing the calls to the shadow stack building functions. In the \texttt{readKey} example, an attacker can jump from any function to the \texttt{readKey} function provided that the destination is located after the call to the \texttt{registerFunction}. % I don't understand this point. The call of registerFunction is done at the beginning of the function? I think, this should be ok with the paragraph above?
-
 The protected binary generated is vulnerable to various static and dynamic patching attacks. Therefore, the use of additional protection techniques is essential to harden the approach against these attacks. E.g., it is possible to apply self-checksumming to protect the integrity of the binary. However, this can be circumvented by known attacks. We therefore propose to extract the stack tracing algorithm from the binary and run it in a secure hypervisor instead. The hypervisor could be attested with hardware support e.g. using TPM and its remote attestation support.
 
 A summary of the attacks and possible corresponding countermeasures is shown in \autoref{fig:attackTree}.
@@ -428,11 +426,18 @@ It is able to replace the original \texttt{graph.txt}-file with a new one and au
   ./compile.sh ../memoryTrace3.c ./memoryTrace sensitiveList.txt
   # now, copy the graph.txt file to newGraph.txt and edit the new file
   # (e.g. change the number of functions and edges and add a new edge)
+  # (note that you should adapt the first two lines of the new graph file accordingly:
+  # the first line is the number of vertices, the second is the number of edges)
   cd ../attack
   ./modifyGraph.sh ../build/memoryTrace ../build/newGraph.txt ../build/graph.txt
   cd ../build
   ./memoryTrace 2
 \end{lstlisting}
 Now, the binary \texttt{memoryTrace} was run with the new, extended graph.
+
+\section{Conclusion}
+Our work is motivated by the search for a purely software-based and highly precise stack verification technique to protect sensitive functions from illegitimate calls. We presented a technique that can instrument any C program to perform stack verification on runtime. Experimental results showed that our scheme requires low overhead of runtime and reasonable overhead of memory consumption. Also, we can guarantee that the scheme introduces no false positives or false negatives. This is encouraging and indicates the high practical relevance of our approach.
+
+However, security analysis revealed a couple vulnerabilities of the technique. We also presented (automated) attacks to exploit them. As these attacks mainly rely on static/dynamic analysis and consequently patching of the resulting binary, additional techniques are required to protect the binary and the control flow from modifications. Recent research proposes self-checksumming techniques, obfuscation or shielded execution to effectively protect binaries from modifications.
 
 \end{document}
