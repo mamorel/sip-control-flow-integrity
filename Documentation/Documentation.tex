@@ -159,6 +159,7 @@ Alexander:
   \item Conceptualization of stack analysis
   \item Performance optimizations of stack analysis
   \item Memory overhead analysis
+  \item Automated attack
 \end{itemize}
 Martin:
 \begin{itemize}
@@ -377,7 +378,8 @@ Hence, the question arises if the solution built on a shadow stack is more vulne
 A second vulnerability is the call graph which is written in a plain text file. It is necessary to proof that this file is not corrupted. We therefore calculate a SHA256 digest over the file on instrumentation, add the digest to the instrumented program and check if the checksum is valid before we read from the file.
 
 If an attacker gets access to this digest in the binary, she can defeat the whole scheme by modifying the reference call graph as she pleases.
-A simple way to defeat this kind of attack is applying an additional layer of obfuscation to this part of the program. This would make reverse engineering more complicated.% I'm not really sure if white-box cryptography would help here. The question is: how do we derive the key? wbc gets the key from the program. If the program (or the important parts for wbc) is not modified but only the text file is corrupted, what do we gain? But yes, HMAC instead of a simple checksum would be a good improvement
+A simple way to defeat this kind of attack is applying an additional layer of obfuscation to this part of the program. This would make reverse engineering more complicated.
+Also, it is possible to calculate an HMAC over the graph.txt file instead of only a simple digest. To avoid storing the key in plain text in the binary, it is possible to apply white-box cryptography.
 
 An attacker might also defeat our scheme by bypassing the calls to the shadow stack building functions. In the \texttt{readKey} example, an attacker can jump from any function to the \texttt{readKey} function provided that the destination is located after the call to the \texttt{registerFunction}. % I don't understand this point. The call of registerFunction is done at the beginning of the function? I think, this should be ok with the paragraph above?
 
@@ -414,6 +416,20 @@ Crypto, oppTree]
 \label{fig:attackTree}
 \end{figure}
 
+\section{Automated attack}
+In the directory \texttt{/instrumenter/attack} of our docker image, we provide a script that can automatically runs one of the attacks we already discussed above.
 
+It is able to replace the original \texttt{graph.txt}-file with a new one and automatically patches the correct checksum into the binary. E.g. to modify the binary built from the \texttt{memoryTrace3.c} file, run the following commands:
+\begin{lstlisting}[basicstyle=\scriptsize]
+  cd /instrumenter/build
+  ./compile.sh ../memoryTrace3.c ./memoryTrace sensitiveList.txt
+  # now, copy the graph.txt file to newGraph.txt and edit the new file 
+  # (e.g. change the number of functions and edges and add a new edge)
+  cd ../attack
+  ./modifyGraph.sh ../build/memoryTrace ../build/newGraph.txt ../build/graph.txt
+  cd ../build
+  ./memoryTrace 2
+\end{lstlisting}
+Now, the binary \texttt{memoryTrace} was run with the new, extended graph.
 
 \end{document}

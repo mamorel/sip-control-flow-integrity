@@ -236,7 +236,7 @@ void readEdges(char ***mapping, char ***adj_mat, int *vertices_count){
 
 void response(){
 	printf("Response mechanism.\n");
-	//exit(1);
+	exit(1);
 }
 
 void verify(char ***mapping, char ***adj_mat, int vertices_count) {
