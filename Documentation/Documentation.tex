@@ -185,7 +185,7 @@ Our solution consists of the following components:
 The Function Pass is loaded using \texttt{opt-3.9}, it has a required option \texttt{-i}, used to specify the path to the file in which to find the list of sensitive functions. One function name per line are expected in this file.\\
 For example, to modify the bitcode of an input C file named \texttt{src.c} and verify the functions specified in file \texttt{list.txt}:
 \begin{lstlisting}[basicstyle=\scriptsize]
-  clang-3.9 -emit-llvm src.c -o src.bc
+  clang-3.9 -emit-llvm -c src.c -o src.bc
   opt-3.9 -load code/libFunctionPass.so -i list.txt -functionpass < src.bc > src_pass.bc
 \end{lstlisting}
 
