@@ -215,7 +215,7 @@ To grasp the stack we want to verify, we rely on building a shadow stack and thu
 \end{itemize}
 
 \subsection{LLVM Pass}
-Our solution relies on a Function Pass. This path iterates over all functions that can be found in the input file to protect. We use the path to inject a function call at the beginning and end of every function defined in the input source file. These functions push and pop the function's name to a shadow stack. If the function which is instrumented can be found in the list of sensitive functions, we also inject a call to the function responsible for the verification of the shadow stack previously built at the entry point of each sensitive function. Finally, we inspect every function instructions and look for calls to other function to build a call graph.
+Our solution relies on a Function Pass. This pass iterates over all functions that can be found in the input file to protect. We use the pass to inject a function call at the beginning and end of every function defined in the input source file. These functions push and pop the function's name to a shadow stack. If the function which is instrumented can be found in the list of sensitive functions, we also inject a call to the function responsible for the verification of the shadow stack previously built at the entry point of each sensitive function. Finally, we inspect every function instructions and look for calls to other function to build a call graph.
 
 \subsection{Stack verification}
 To verify if the stack trace is legitimate, a couple of approaches are possible. In this subsection, we discuss some ideas and explain our implementation.
@@ -244,11 +244,14 @@ An additional layer of obfuscation would therefore probably be necessary to incr
 Such improvements however appear specific to the application to protect. We therefore ship our solution with a the possibility to extend the response to any desired technique. Therefore, it is only necessary to implement the function \texttt{response()} in the file \texttt{StackAnalysis.c}.
 
 \section{Performance Evaluation}
+In this section we conduct several experiments to evaluate the performance of our tool. We first discuss on the time required to protect an existing source file.
+Then, we try to measure the overhead caused by our protection scheme on the protected binary, in terms of memory use and runtime overhead.
+
+Time related measurements are obtained on a Lenovo ThinkPad X250 laptop with an Intel i5-5200U, 8GB of RAM running Manjaro 17.0.1 and Linux kernel 4.9.
 
 \subsection{Protection Time}
 We used the \texttt{time} command to measure the time necessary to run our pass and compile the binary 50 times to get more precise estimations.\\
-These results were obtained on a Lenovo ThinkPad X250 laptop with an Intel i5-5200U, 8GB of RAM running Manjaro 17.0.1 and Linux kernel 4.9.
-We used as input the same simple program used in the memory consumption evaluation, consisting of 3 simple functions and then added other dummy functions. Results are shown in \autoref{table:protectionTime}.
+We used as input a simple program further used in the memory consumption evaluation, consisting of 3 simple functions and then added other dummy functions. Results are shown in \autoref{table:protectionTime}.
 
 There does not seem to be any major increase in the protection time as the input program grows a little bit larger and as additional sensitive functions are protected. Our pass iterates over the basic blocks of each function of the input source file to inject calls to the functions building the shadow stack. The more functions, the more iterations will be performed, simply injecting function calls does not seem like a computationally intensive task. Protecting more functions just results in additional calls to the \texttt{verifyStack} function being injected, which should not really increase the protection time by much.
 
@@ -335,10 +338,10 @@ Finally, when entering a sensitive function, we need to check each pair of funct
 For our scheme to be useable, we therefore need to ensure that it does not add too much overhead to an existing application.
 We used a sample application consisting of dummy functions. Using the \texttt{time} we measured the time required to run 1,000 times the original application as well as protected versions with an increasing number of sensitive functions.
 Results are shown in \autoref{table:runtimeOverhead}. In the sample application used, several functions are repeatedly called. This can be considered a worst-case scenario, because our shadow stack will constantly be pushed and poped.
-In addition, if such functions are listed as sensitive, we will repeatedly check the stack frame when entering them. This observation for instance probably explains the significant increase in runtime from the application with two sensitive functions (third line in the table) to the application with three sensitive function (fourth line).
+In addition, if such functions are listed as sensitive, we will repeatedly check the stack frame when entering them. This observation for instance probably explains the significant increase in runtime from the application with two sensitive functions (line four in the table) to the application with three sensitive function (line five).
 
 Simply injecting the calls to the function responsible for building the shadow stack causes a runtime increase of about 48\%.
-Protecting frequently called functions might also cause a significant increase in the application runtime, whereas for the ones only occasionnally called however seems to only marginally affect runtime, for instance with five and six sensitive functions (last two lines of the table).
+Protecting frequently called functions might also cause a significant increase in the application runtime, whereas for the ones only occasionnally called however it seems to only marginally affect runtime, for instance with five and six sensitive functions (last two lines of the table).
 
 \begin{table}
   \centering \scalebox{1.0}{
@@ -423,7 +426,7 @@ It is able to replace the original \texttt{graph.txt}-file with a new one and au
 \begin{lstlisting}[basicstyle=\scriptsize]
   cd /instrumenter/build
   ./compile.sh ../memoryTrace3.c ./memoryTrace sensitiveList.txt
-  # now, copy the graph.txt file to newGraph.txt and edit the new file 
+  # now, copy the graph.txt file to newGraph.txt and edit the new file
   # (e.g. change the number of functions and edges and add a new edge)
   cd ../attack
   ./modifyGraph.sh ../build/memoryTrace ../build/newGraph.txt ../build/graph.txt
