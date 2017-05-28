@@ -234,6 +234,8 @@ In summary, there is a tradeoff between performance and precision. As we expect 
 
 We use an adjacency matrix to model the known good call graph. As soon as we enter a sensitive function, we check that every transition in our shadow stack is known.
 
+Note that the instrumented program requires the valid graph.txt file in the same directory.
+
 \subsection{Response model}
 In this subsection, we discuss some potential response models and explain the choice we made.
 
@@ -450,6 +452,6 @@ The stack is not checked in the binary \texttt{memoryTrace\_nop}.
 \section{Conclusion}
 Our work is motivated by the search for a purely software-based and highly precise stack verification technique to protect sensitive functions from illegitimate calls. We presented a technique that can instrument any C program to perform stack verification on runtime. Experimental results showed that our scheme requires low overhead of runtime and reasonable overhead of memory consumption. Also, we can guarantee that the scheme introduces no false positives or false negatives. This is encouraging and indicates the high practical relevance of our approach.
 
-However, security analysis revealed a couple vulnerabilities of the technique. We also presented (automated) attacks to exploit them. As these attacks mainly rely on static/dynamic analysis and consequently patching of the resulting binary, additional techniques are required to protect the binary and the control flow from modifications. Recent research proposes self-checksumming techniques, obfuscation or shielded execution to effectively protect binaries from modifications.
+However, our security analysis revealed a couple vulnerabilities of the technique. We also presented (automated) attacks to exploit them. As these attacks mainly rely on static/dynamic analysis and consequently patching of the resulting binary, additional techniques are required to protect the binary and the control flow from modifications. Recent research proposes self-checksumming techniques, obfuscation or shielded execution to effectively protect binaries from modifications.
 
 \end{document}
