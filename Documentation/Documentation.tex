@@ -217,6 +217,8 @@ To grasp the stack we want to verify, we rely on building a shadow stack and thu
 \subsection{LLVM Pass}
 Our solution relies on a Function Pass. This pass iterates over all functions that can be found in the input file to protect. We use the pass to inject a function call at the beginning and end of every function defined in the input source file. These functions push and pop the function's name to a shadow stack. If the function which is instrumented can be found in the list of sensitive functions, we also inject a call to the function responsible for the verification of the shadow stack previously built at the entry point of each sensitive function. Finally, we inspect every function instructions and look for calls to other function to build a call graph.
 
+When the pass has iterated over all functions, we produce the file \texttt{graph.txt} where all edges from the entry point of the program to a sensitive function are contained. This file is required during the stack trace verification. We also dynamically generate the code that is injected into the program. I.e., we update a placeholder for the expected hash of the graph.txt file by the hash we generate from the file. Note that it would also be possible to dynamically generate the stack analysis functions with hardcoded adjacency matrix or list as a performance improvement. However, the security of both concepts remains the same.
+
 \subsection{Stack verification}
 To verify if the stack trace is legitimate, a couple of approaches are possible. In this subsection, we discuss some ideas and explain our implementation.
 
