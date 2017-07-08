@@ -1,8 +1,8 @@
 #!/bin/bash
 
 usage () {
-	printf "Usage: $0 <source file> <desired path to new binary> <sensitive function list>\n"
-	printf "Example: '$0 ../something.c ./something sensitiveList.txt'\n"
+	printf "Usage: $0 <llvm bitcode file> <desired path to new binary> <sensitive function list>\n"
+	printf "Example: '$0 ../something.bc ./something sensitiveList.txt'\n"
 	exit 1
 }
 
@@ -12,10 +12,14 @@ then
 	usage
 fi
 
-clang-3.9 -emit-llvm -c $1 -o ../something.bc
-opt-3.9 -load code/libFunctionPass.so -i $3 -functionpass < ../something.bc > something_pass.bc
+opt-3.9 -load code/libFunctionPass.so -i $3 -functionpass < $1 > something_pass.bc
 opt-3.9 -O3 < something_pass.bc > something_opt.bc
-llc-3.9 something_opt.bc
-gcc -c something_opt.s -o something_opt.o
-gcc -O1 -c ../code/NewStackAnalysis.c -o StackAnalysis.o -lssl -lcrypto
-gcc -O1 something_opt.o StackAnalysis.o -o $2 -lssl -lcrypto
+#llc-3.9 something_opt.bc
+#gcc -c something_opt.s -o something_opt.o
+#gcc -O1 -c ../code/NewStackAnalysis.c -o StackAnalysis.o -lssl -lcrypto
+#gcc -O1 something_opt.o StackAnalysis.o -o $2 -lssl -lcrypto
+
+
+clang-3.9 -g -c -emit-llvm /cfi/code/response.c -o response.bc
+llvm-link-3.9 response.bc something_opt.bc -o something_tmp.bc
+clang-3.9 -g something_tmp.bc -lncurses -o something_tmp
