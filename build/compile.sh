@@ -20,6 +20,6 @@ opt-3.9 -O3 < something_pass.bc > something_opt.bc
 #gcc -O1 something_opt.o StackAnalysis.o -o $2 -lssl -lcrypto
 
 
-clang-3.9 -g -c -emit-llvm /cfi/code/response.c -o response.bc
-llvm-link-3.9 response.bc something_opt.bc -o something_tmp.bc
+clang-3.9 -g -c -emit-llvm /cfi/code/NewStackAnalysis.c -o NewStackAnalysis.bc -lssl -lcrypto
+llvm-link-3.9 NewStackAnalysis.bc something_opt.bc -o something_tmp.bc -lssl -lcrypto
 clang-3.9 -g something_tmp.bc -lncurses -o $2
