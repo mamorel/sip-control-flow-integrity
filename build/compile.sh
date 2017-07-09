@@ -22,4 +22,4 @@ opt-3.9 -O3 < something_pass.bc > something_opt.bc
 
 clang-3.9 -g -c -emit-llvm /cfi/code/response.c -o response.bc
 llvm-link-3.9 response.bc something_opt.bc -o something_tmp.bc
-clang-3.9 -g something_tmp.bc -lncurses -o something_tmp
+clang-3.9 -g something_tmp.bc -lncurses -o $2
